@@ -1,0 +1,42 @@
+.edit-crop-card {
+  background: #f9f9f9;
+  border: 2px solid #ddd;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.edit-crop-card h3 {
+  margin-bottom: 15px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.field label {
+  width: 150px;
+  font-weight: bold;
+}
+
+.field-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field input {
+  flex: 1;
+  padding: 4px 6px;
+}
+
+.edit-actions {
+  margin-top: 15px;
+}
+
+.edit-actions button {
+  margin-right: 10px;
+  padding: 6px 12px;
+}

@@ -1,0 +1,32 @@
+1.Buyer and farmer Login register
+2.Profile name or profile page of farmer buyer
+3. Farmers page List or  add product
+4.Form
+5.Card display
+
+
+
+
+  Farmer section  
+1.Home - brand logo , navbar , profile, hero page , my added crop card display 
+2 . Add crop  - form , card display 
+3. My added  crop list
+4. When someone puts a bid on any of the listed crop ,  it will show auction has started now for only that crop. 
+5. all bidder list with  their bid prices  who has put bids on your crop.
+6. in bidderslist page current highest bid price on your crop will be shown .
+6. Winner bidder will be  highlighted who has put highest price for your harvest.
+7. Winning bidders bid price will be shown to you.
+
+
+Bidder section
+
+1.home - brand logo , navbar , profile, hero section, many  crop cards by farmer with sections like vegetable , fruit ,or grain ,and search bar to search crops filters with price range and freshness and croptype  and bid button on each card when i click on card then a big page open in which card name and big image on left half page part with image slider that is 3 small images on downward when i click on that image the image will be shown on big size on front and right half part of page contains all crop details with farmer name and with a bid button  .
+
+2.2nd nav option My bids list  in which  crop cards on which you have put bids  in which crop image crop name , details your bid price you put , and auction remaining time in hours minutes seconds and status of losing or winning and a button of updated bid price and a view leaderboard button .
+
+3. 3rd nav option  leaderboard page a table  in which  every crop name on which you placed bids and image on header and an table in which bidders name and bid price  in red or green color if in top 5 then green color price and a status column in which winning , losing ,mid. 
+
+4. i think when someone wons auction send request to farmer to chat and and in  chat page 4 horizantal cards with those farmer   info on whose crops you put bids and  a chat button after clicking this chat button a chat page like massages app or whatsapp in which chat message typing box is  disabled and a big icon of lock in center or this chat page and text like chat is lock until you win this auction and after winning this auction that icon and text remove and enables message typing box with already received message by that perticular farmer whose crop auction you won and in this message by farmer the congrats on winning here  is the my address my contact no and visit me to see harvest and then proceed and also with this message 2 options proceed deal or cancel deal here so when buyer clicks proceed deal then farmer will recieve this message and also farmer will also recieves those message that buyer will type from message typing box and when buyer clicks proceed deal then that perticular crop releted cards or info or tables   will be removed from the  bleaderboard page and bhome page from buyer section and also from the bidderslist page and the myaddedcrop page from farmers section and that crop card should be only present in addcrop page in farmer section with a chat button added in this card and also make visible this card with chat button added inside card in mybidlist.jsx   in buyer section so only in this two pages that crop card should be dispayed and after clicking this chat button that chat page should open in which you have recieved congrats  message  and 2  options proceed deal and cancel deal from that perticular farmer           so 2 new files  1st  chats.jsx file  on which those farmer info cards with chat button and after clikcking chat button a 2nd file message.jsx on which congrats message and 2 options are recieved  and in this chats.jsx files in which farmers info card with button in this page only those farmers cards will be visible on which you have placed bids and if buyer clicks cancel deal then that perticular crop card is still in farmers addcrop page with edit and remove button enabled  and in myaddedcrops with not stared status  page and that crop card also visible in bhome page with bid button enabled again like initial stages  like when farmer adds new crop by filling form so that any other buyer can newly put bids on that crop again  restart  same process did you understand this process after cancel deal 
+then in farmer section new nav option chats in which those crop you added as a farmer and if any of those  crops auction starts and ends then a card is created in which winners name and bid price and a chat button and after clicking this chat button a new page opens  a message page  layout like message app  or whatsapp   in which a  message typing box on downward direction and a automatically sent congrats message to that winner buyer in this message   congrats on winning here is my address contact no. , email . and automatically sent 2 options 1. proceed deal 2 . cancel deal when buyer click any of this option then that message cancel deal or proceed deal is sent to farmer
+
+

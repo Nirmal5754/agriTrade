@@ -1,0 +1,21 @@
+input.error,
+select.error,
+textarea.error {
+  border: 2px solid red;
+}
+
+input.valid,
+select.valid,
+textarea.valid {
+  border: 2px solid green;
+}
+
+.errorMsg {
+  color: red;
+  font-size: 12px;
+  margin: 3px 0 10px 0;
+}
+
+.field {
+  margin-bottom: 15px;
+}
