@@ -115,19 +115,17 @@ const BMessage = () => {
         height: "80vh",
         display: "flex",
         flexDirection: "column",
+        justifyContent:"center",
         border: "1px solid #ccc",
         borderRadius: 10,
-      }}
+        paddingBottom:20
+      }} 
     >
       {/* HEADER */}
       <div
-        style={{
-          padding: 12,
-          borderBottom: "1px solid #ccc",
-          fontWeight: "bold",
-        }}
+         className="p-4  rounded-t-lg border-gray-300 bg-emerald-600"
       >
-        Chat with Farmer — {farmer.name}
+     <span className="flex items-center font-semibold text-white"><div className="border bg-yellow-500 border-none rounded-full px-2 py-1 font-bold text-yellow-100">{ farmer.name.split(" ").map(w => w[0]).join("")}</div>&nbsp; {farmer.name}</span> 
       </div>
 
       {/* BODY (FIXED HEIGHT — NO SHRINK) */}
@@ -135,7 +133,7 @@ const BMessage = () => {
         style={{
           flex: 1,
           padding: 15,
-          background: "#f5f5f5",
+          background: "#49361c",
           overflowY: "auto",
         }}
       >
@@ -154,11 +152,12 @@ const BMessage = () => {
                   padding: "8px 12px",
                   borderRadius: 10,
                   background:
-                    m.sender === "buyer" ? "#dcf8c6" : "#fff",
-                  border: "1px solid #ccc",
+                    m.sender === "buyer" ? "#a57c14" : "#66481e",
+                
                   display: "inline-block",
                   maxWidth: "70%",
                 }}
+                className="text-white font-semibold"
               >
                 {m.text}
               </span>
@@ -195,9 +194,12 @@ const BMessage = () => {
       <div
         style={{
           padding: 10,
-          borderTop: "1px solid #ccc",
+         
           display: "flex",
-          gap: 10,
+          gap: 20, 
+          justifyContent:"center",
+          background:"#49361c"
+
         }}
       >
         <input
@@ -205,11 +207,13 @@ const BMessage = () => {
           onChange={e => setInput(e.target.value)}
           disabled={!auctionEnded || !isWinner}
           placeholder="Type a message"
-          style={{ flex: 1, padding: 8 }}
+          style={{ background:"#66481e" }}
+          className="flex px-3 py-3 bg-amber-900 rounded-xl text-white font-semibold outline-none"
         />
         <button
           onClick={() => sendMessage(input)}
           disabled={!auctionEnded || !isWinner}
+          className="rounded-xl bg-yellow-600 px-4 py-1 text-white font-semibold"
         >
           Send
         </button>
