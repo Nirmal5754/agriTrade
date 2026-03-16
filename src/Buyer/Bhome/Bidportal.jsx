@@ -1,24 +1,44 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-// import "./Bidportal.css";
+import { selectUserBids, setUserBids } from "../../Redux/Slices/bidSlice";
+import { selectAllCrops, setCrops } from "../../Redux/Slices/cropSlice";
+import { useParams } from "react-router-dom";
+import { toast } from "../../ui/toast";
+
+
 
 const Bidportal = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+const { cropId } = useParams();
+
   const [crop, setCrop] = useState(null);
   const [bidPrice, setBidPrice] = useState("");
   const [timeRemaining, setTimeRemaining] = useState("");
 
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+const loggedInUser = useSelector((state) => state.auth.user);
+const allCrops = useSelector(selectAllCrops);
+const myBidsFromStore = useSelector((state) => selectUserBids(state, loggedInUser?.id));
+
+
 
   /* -------- LOAD CROP -------- */
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("bidOnCrop"));
-    if (!stored) {
-      navigate("/bhome");
-      return;
-    }
-    setCrop(stored);
-  }, [navigate]);
+  if (!loggedInUser) {
+    navigate("/login");
+    return;
+  }
+
+  const found = allCrops.find((c) => String(c.id) === String(cropId));
+  if (!found) {
+    navigate("/bhome");
+    return;
+  }
+
+  setCrop(found);
+}, [navigate, loggedInUser, allCrops, cropId]);
+
 
   /* -------- TIMER -------- */
   useEffect(() => {
@@ -51,13 +71,13 @@ const Bidportal = () => {
   /* -------- PLACE / UPDATE BID -------- */
   const handleBidSubmit = () => {
     if (!bidPrice || Number(bidPrice) <= crop.basePrice) {
-      alert("Bid must be greater than base price");
+      toast.error("Bid must be greater than base price");
       return;
     }
 
     const now = Date.now();
 
-    // ✅ Auction start logic: start on first bid
+    // Auction start logic: start on first bid
     const auctionStartTime = crop.auctionStartTime || now;
     const auctionDurationMs = crop.auctionDurationMs || 10 * 60 * 1000;
     const auctionEndTime = auctionStartTime + auctionDurationMs;
@@ -70,8 +90,6 @@ const Bidportal = () => {
     };
 
     /* -------- UPDATE allCrops -------- */
-    const allCrops = JSON.parse(localStorage.getItem("allCrops")) || [];
-
     const updatedAllCrops = allCrops.map((c) => {
       if (c.id !== crop.id) return c;
 
@@ -93,17 +111,18 @@ const Bidportal = () => {
             : "Not Started",
       };
 
-      // Update local bidOnCrop for immediate UI update
+      // Update local crop state for immediate UI update
       if (c.id === crop.id) setCrop(updatedCrop);
 
       return updatedCrop;
     });
 
-    localStorage.setItem("allCrops", JSON.stringify(updatedAllCrops));
+    dispatch(setCrops(updatedAllCrops));
+
 
     /* -------- UPDATE myBids -------- */
-    const myBidKey = `myBids_${loggedInUser.id}`;
-    const myBids = JSON.parse(localStorage.getItem(myBidKey)) || [];
+const myBids = [...(myBidsFromStore || [])];
+
 
     const index = myBids.findIndex((b) => b.id === crop.id);
 
@@ -117,18 +136,20 @@ const Bidportal = () => {
     };
 
     index >= 0 ? (myBids[index] = entry) : myBids.push(entry);
-    localStorage.setItem(myBidKey, JSON.stringify(myBids));
+   
+    dispatch(setUserBids({ userId: loggedInUser.id, bids: myBids }));
 
-    window.dispatchEvent(new Event("cropsUpdated"));
+
+ 
     navigate("/mybidlist");
   };
 
   if (!crop) return null;
 
   return (
-    <div className="bidportal-container">
-      <div className="bidportal-header">
-        <img src={crop.images?.[0]} alt={crop.name} />
+    <div className="bidportal-container w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bidportal-header flex flex-col sm:flex-row gap-4 items-start">
+        <img src={crop.images?.[0]} alt={crop.name} className="w-full sm:w-64 h-40 sm:h-48 object-cover rounded-lg" />
         <div>
           <h2>{crop.name}</h2>
           <p>Condition: {crop.cropCondition}</p>
@@ -138,7 +159,8 @@ const Bidportal = () => {
       </div>
 
       <p>
-        <strong>Base Price:</strong> ₹{crop.basePrice}
+        <strong>Base Price:</strong> {"\u20B9"}
+        {crop.basePrice}
       </p>
       <p>
         <strong>Time Remaining:</strong> {timeRemaining}
@@ -150,7 +172,7 @@ const Bidportal = () => {
         onChange={(e) => setBidPrice(e.target.value)}
         placeholder="Enter bid"
       />
-      <button onClick={handleBidSubmit}>Place Bid</button>
+      <button onClick={handleBidSubmit} className="mt-3 w-full sm:w-auto rounded-md bg-emerald-700 px-4 py-2 font-bold text-white hover:bg-emerald-800">Place Bid</button>
 
       {/* Optional: show current bidders */}
       {crop.bidders?.length > 0 && (
@@ -159,7 +181,8 @@ const Bidportal = () => {
           <ul>
             {crop.bidders.map((b, i) => (
               <li key={i}>
-                {b.name}: ₹{b.price}
+                {b.name}: {"\u20B9"}
+                {b.price}
               </li>
             ))}
           </ul>
@@ -170,3 +193,6 @@ const Bidportal = () => {
 };
 
 export default Bidportal;
+
+
+

@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { NavLink } from 'react-router-dom';
 
 
@@ -8,7 +8,7 @@ import { NavLink } from 'react-router-dom';
 const FHome = () => {
 
   return (
-    <div className='flex flex-col relative bottom-60  items-center justify-center bg-green-50 min-h-screen min-w-screen'>
+    <div className='flex flex-col items-center justify-center bg-green-50 min-h-screen w-full'>
 
 
 {/* header  */}
@@ -51,3 +51,5 @@ const FHome = () => {
 }
 
 export default FHome;
+
+

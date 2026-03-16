@@ -1,40 +1,48 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { selectAllCrops } from "../../Redux/Slices/cropSlice";
+import {
+  appendChatMessage,
+  hydrateChat,
+  selectChatMessages,
+  setChatMessages
+} from "../../Redux/Slices/chatSlice";
 
 const BMessage = () => {
   const { cropId } = useParams();
-  const buyer = JSON.parse(localStorage.getItem("loggedInUser"));
+  const dispatch = useDispatch();
+
+  const buyer = useSelector((state) => state.auth.user);
+  const allCrops = useSelector(selectAllCrops);
 
   const [crop, setCrop] = useState(null);
   const [farmer, setFarmer] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [auctionEnded, setAuctionEnded] = useState(false);
   const [isWinner, setIsWinner] = useState(false);
-  const [decisionTaken, setDecisionTaken] = useState(false);
+  const [chatKey, setChatKey] = useState("");
 
-  /* ===== LOAD CROP + STATUS ===== */
+  const messages = useSelector((state) => selectChatMessages(state, chatKey));
+  const decisionTaken = messages.some(
+    (m) => m.text === "Proceed Deal" || m.text === "Cancel Deal"
+  );
+
   useEffect(() => {
     if (!buyer) return;
 
-    const allCrops = JSON.parse(localStorage.getItem("allCrops")) || [];
-    const found = allCrops.find(c => String(c.id) === cropId);
+    const found = allCrops.find((c) => String(c.id) === String(cropId));
     if (!found) return;
 
     setCrop(found);
 
     const farmerInfo = {
       id: found.farmerId || found.ownerId,
-      name:
-        found.farmerName ||
-        found.farmer ||
-        found.ownerName ||
-        "Farmer",
+      name: found.farmerName || found.farmer || found.ownerName || "Farmer"
     };
     setFarmer(farmerInfo);
 
-    const now = Date.now();
-    const ended = now >= found.auctionEndTime;
+    const ended = Date.now() >= found.auctionEndTime;
     setAuctionEnded(ended);
 
     const sorted = [...(found.bidders || [])].sort(
@@ -45,170 +53,116 @@ const BMessage = () => {
     const buyerWon = winner?.userId === buyer.id;
     setIsWinner(buyerWon);
 
-    if (!buyerWon) return;
-
-    const CHAT_KEY = `chat_${found.id}_${farmerInfo.id}_${buyer.id}`;
-    const saved = JSON.parse(localStorage.getItem(CHAT_KEY)) || [];
-
-    if (ended && saved.length === 0) {
-      const autoMsg = {
-        sender: "farmer",
-        text: "Congrats on winning! Here are my contact details.",
-        time: Date.now(),
-        system: true,
-      };
-      localStorage.setItem(CHAT_KEY, JSON.stringify([autoMsg]));
-      setMessages([autoMsg]);
-    } else {
-      setMessages(saved);
-      setDecisionTaken(
-        saved.some(
-          m => m.text === "Proceed Deal" || m.text === "Cancel Deal"
-        )
-      );
+    if (!buyerWon) {
+      setChatKey("");
+      return;
     }
-  }, [cropId, buyer]);
 
-  /* ===== REAL-TIME SYNC ===== */
+    setChatKey(`chat_${found.id}_${farmerInfo.id}_${buyer.id}`);
+  }, [cropId, buyer, allCrops]);
+
   useEffect(() => {
-    if (!crop || !farmer || !buyer) return;
+    if (!chatKey) return;
+    dispatch(hydrateChat({ key: chatKey }));
+  }, [chatKey, dispatch]);
 
-    const CHAT_KEY = `chat_${crop.id}_${farmer.id}_${buyer.id}`;
+  useEffect(() => {
+    if (!chatKey || !auctionEnded || !isWinner) return;
+    if (messages.length > 0) return;
 
-    const onStorageChange = (e) => {
-      if (e.key === CHAT_KEY && e.newValue) {
-        setMessages(JSON.parse(e.newValue));
-      }
+    const autoMsg = {
+      sender: "farmer",
+      text: "Congrats on winning! Here are my contact details.",
+      time: Date.now(),
+      system: true
     };
 
-    window.addEventListener("storage", onStorageChange);
-    return () => window.removeEventListener("storage", onStorageChange);
-  }, [crop, farmer, buyer]);
+    dispatch(setChatMessages({ key: chatKey, messages: [autoMsg] }));
+  }, [chatKey, auctionEnded, isWinner, messages.length, dispatch]);
 
-  /* ===== SEND MESSAGE ===== */
   const sendMessage = (text) => {
-    if (!text.trim() || !auctionEnded || !isWinner) return;
+    if (!text.trim() || !auctionEnded || !isWinner || !chatKey) return;
 
-    const CHAT_KEY = `chat_${crop.id}_${farmer.id}_${buyer.id}`;
-    const updated = [
-      ...messages,
-      { sender: "buyer", text, time: Date.now() },
-    ];
-
-    setMessages(updated);
+    dispatch(
+      appendChatMessage({
+        key: chatKey,
+        message: { sender: "buyer", text, time: Date.now() }
+      })
+    );
     setInput("");
-    localStorage.setItem(CHAT_KEY, JSON.stringify(updated));
   };
 
-  /* ===== DEAL ACTION ===== */
   const sendDecision = (text) => {
     if (decisionTaken) return;
     sendMessage(text);
-    setDecisionTaken(true);
   };
 
-  if (!crop || !farmer) return null;
+  if (!crop || !farmer) {
+    return <div className="w-full p-6 text-center font-semibold">Loading chat...</div>;
+  }
 
   return (
-    <div
-      style={{
-        height: "80vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent:"center",
-        border: "1px solid #ccc",
-        borderRadius: 10,
-        paddingBottom:20
-      }} 
-    >
-      {/* HEADER */}
-      <div
-         className="p-4  rounded-t-lg border-gray-300 bg-emerald-600"
-      >
-     <span className="flex items-center font-semibold text-white"><div className="border bg-yellow-500 border-none rounded-full px-2 py-1 font-bold text-yellow-100">{ farmer.name.split(" ").map(w => w[0]).join("")}</div>&nbsp; {farmer.name}</span> 
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 h-[80vh] flex flex-col justify-center border border-gray-300 rounded-[10px] pb-5">
+      <div className="p-4 rounded-t-lg border-gray-300 bg-emerald-600">
+        <span className="flex items-center font-semibold text-white">
+          <div className="border bg-yellow-500 border-none rounded-full px-2 py-1 font-bold text-yellow-100">
+            {farmer.name.split(" ").map((w) => w[0]).join("")}
+          </div>
+          &nbsp; {farmer.name}
+        </span>
       </div>
 
-      {/* BODY (FIXED HEIGHT — NO SHRINK) */}
-      <div
-        style={{
-          flex: 1,
-          padding: 15,
-          background: "#49361c",
-          overflowY: "auto",
-        }}
-      >
+      <div className="flex-1 p-4 bg-[#49361c] overflow-y-auto">
         {auctionEnded && isWinner ? (
           messages.map((m, i) => (
             <div
               key={i}
-              style={{
-                textAlign:
-                  m.sender === "buyer" ? "right" : "left",
-                marginBottom: 10,
-              }}
+              className={[
+                "mb-2.5 flex",
+                m.sender === "buyer" ? "justify-end" : "justify-start",
+              ].join(" ")}
             >
               <span
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 10,
-                  background:
-                    m.sender === "buyer" ? "#a57c14" : "#66481e",
-                
-                  display: "inline-block",
-                  maxWidth: "70%",
-                }}
-                className="text-white font-semibold"
+                className={[
+                  "px-3 py-2 rounded-[10px] inline-block max-w-[70%] text-white font-semibold",
+                  m.sender === "buyer" ? "bg-[#a57c14]" : "bg-[#66481e]",
+                ].join(" ")}
               >
                 {m.text}
               </span>
             </div>
           ))
         ) : (
-          <div style={{ textAlign: "center", marginTop: 40 }}>
-            🔒 Chat is locked until auction ends
+          <div className="text-center mt-10 text-white/90 font-semibold">
+            Chat is locked until auction ends
           </div>
         )}
       </div>
 
-      {/* DEAL BUTTONS */}
       {auctionEnded && isWinner && !decisionTaken && (
-        <div
-          style={{
-            padding: 10,
-            borderTop: "1px solid #ccc",
-            display: "flex",
-            justifyContent: "center",
-            gap: 10,
-          }}
-        >
-          <button onClick={() => sendDecision("Proceed Deal")}>
+        <div className="p-2.5 border-t border-gray-300 flex justify-center gap-2.5 bg-[#49361c]">
+          <button
+            onClick={() => sendDecision("Proceed Deal")}
+            className="rounded-lg bg-emerald-600 px-4 py-2 font-bold text-white hover:bg-emerald-700"
+          >
             Proceed Deal
           </button>
-          <button onClick={() => sendDecision("Cancel Deal")}>
+          <button
+            onClick={() => sendDecision("Cancel Deal")}
+            className="rounded-lg bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700"
+          >
             Cancel Deal
           </button>
         </div>
       )}
 
-      {/* INPUT */}
-      <div
-        style={{
-          padding: 10,
-         
-          display: "flex",
-          gap: 20, 
-          justifyContent:"center",
-          background:"#49361c"
-
-        }}
-      >
+      <div className="p-2.5 flex gap-5 justify-center bg-[#49361c]">
         <input
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           disabled={!auctionEnded || !isWinner}
           placeholder="Type a message"
-          style={{ background:"#66481e" }}
-          className="flex px-3 py-3 bg-amber-900 rounded-xl text-white font-semibold outline-none"
+          className="flex-1 w-full px-3 py-3 bg-[#66481e] rounded-xl text-white font-semibold outline-none disabled:opacity-60"
         />
         <button
           onClick={() => sendMessage(input)}
@@ -223,3 +177,5 @@ const BMessage = () => {
 };
 
 export default BMessage;
+
+

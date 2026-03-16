@@ -1,46 +1,15 @@
-import React, { useEffect, useState } from "react";
+﻿import React from "react";
+import { useSelector } from "react-redux";
+import { selectUserCropsWithStatus } from "../../Redux/Slices/cropSlice";
+
+
 
 const Myaddedcrops = () => {
-  const [crops, setCrops] = useState([]);
+const user = useSelector((state) => state.auth.user);
+const crops = useSelector((state) =>
+  selectUserCropsWithStatus(state, user?.id)
+);
 
-  const loadCrops = () => {
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
-    if (!user?.id) return;
-
-    const farmerKey = `farmerCrops_${user.id}`;
-    const farmerCrops = JSON.parse(localStorage.getItem(farmerKey)) || [];
-    const allCrops = JSON.parse(localStorage.getItem("allCrops")) || [];
-    const now = Date.now();
-
-    const updated = farmerCrops.map((crop) => {
-      const globalCrop = allCrops.find((c) => c.id === crop.id);
-
-      let status = "Not Started";
-
-      if (globalCrop?.auctionStartTime && globalCrop?.auctionEndTime) {
-        if (now >= globalCrop.auctionStartTime && now < globalCrop.auctionEndTime) {
-          status = "Active";
-        } else if (now >= globalCrop.auctionEndTime) {
-          status = "Ended";
-        }
-      }
-
-      return { ...crop, auctionStatus: status };
-    });
-
-    setCrops(updated);
-  };
-
-  useEffect(() => {
-    loadCrops();
-    const interval = setInterval(loadCrops, 1000);
-    window.addEventListener("cropsUpdated", loadCrops);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("cropsUpdated", loadCrops);
-    };
-  }, []);
 
   const getBadgeClass = (status) => {
     switch (status) {
@@ -54,14 +23,14 @@ const Myaddedcrops = () => {
   };
 
   return (
-    <div className="mx-8 my-added-crops px-8 relative bottom-33 bg-white-500  min-w-screen min-h-screen"><h2 className="">My Added Crops</h2> 
-      <div className="bg-gray-100 flex justify-center relative bottom-27 p-8 rounded-lg min-h-screen">
+    <div className="w-full my-added-crops px-4 sm:px-6 lg:px-8 py-6"><h2 className="">My Added Crops</h2> 
+      <div className="bg-gray-100 w-full rounded-lg p-4 sm:p-6 overflow-x-auto">
   
 
       {crops.length === 0 ? (
         <p>No crops added yet.</p>
       ) : (
-        <table className="border border-gray-300 w-200 mx-9">
+        <table className="border border-gray-300 min-w-[640px] w-full mx-auto text-sm">
           <thead>
             <tr>
               <th className="border py-3  border-gray-300 p-1 bg-green-700 text-lg text-yellow-100">Crop Image</th>
@@ -72,12 +41,12 @@ const Myaddedcrops = () => {
           <tbody>
             {crops.map((crop) => (
               <tr key={crop.id}>
-                <td className="border  border-gray-300 w-70 justify-center items-center">
+                <td className="border border-gray-300 p-2">
                   {crop.images?.[0] ? (
                     <img
                       src={crop.images[0]}
                       alt={crop.name}
-                     className="h-30 w-30 justify-center relative left-20 rounded-lg"
+                     className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-lg mx-auto"
                     />
                   ) : (
                     "No Image"
@@ -101,4 +70,6 @@ const Myaddedcrops = () => {
 };
 
 export default Myaddedcrops;
+
+
 

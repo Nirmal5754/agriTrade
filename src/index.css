@@ -1,2 +1,57 @@
 
 @import "tailwindcss";
+
+/* Login page background (keeps your JSX unchanged) */
+.loginpage {
+  position: relative;
+  /* Put your chosen background photo in /public/login-bg.jpg */
+  background-image:
+    linear-gradient(rgba(3, 7, 18, 0.28), rgba(3, 7, 18, 0.45)),
+    url("/login-bg.jpg");
+  background-size: cover;
+  background-position: 50% 55%;
+  background-repeat: no-repeat;
+}
+
+/* Dark overlay so the card stays readable on bright screens */
+.loginpage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Keep this very subtle; the main darkening is the gradient above */
+  background:
+    radial-gradient(1200px 700px at 20% 18%, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0)),
+    radial-gradient(1100px 600px at 78% 28%, rgba(255, 195, 120, 0.10), rgba(255, 195, 120, 0)),
+    rgba(0, 0, 0, 0.02);
+}
+
+.loginpage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Frosted card */
+.loginpage .header {
+  background: rgba(0, 0, 0, 0.74) !important;
+  border-color: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(10px);
+}
+
+.loginpage .main {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* Optional: slightly translucent inputs (plain HTML inputs now) */
+.loginpage input,
+.loginpage select,
+.loginpage textarea {
+  background: rgba(255, 255, 255, 0.78) !important;
+}
+
+@media (min-width: 768px) {
+  .loginpage {
+    background-attachment: fixed;
+  }
+}

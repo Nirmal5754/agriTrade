@@ -1,11 +1,24 @@
-
-import React, { useState, useEffect } from "react";
+﻿
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Addcropform.css";
+import { useDispatch, useSelector, useStore } from "react-redux";
+import { addCrop, updateCrop } from "../../Redux/Slices/cropSlice";
+import { toast } from "../../ui/toast";
+import { supabase } from "../../supabaseClient";
+
+// useSelector useDispatch 
+
+
 
 const Addcropform = ({ editCrop }) => {
   const navigate = useNavigate();
-
+const dispatch = useDispatch();
+const store = useStore();
+const user = useSelector((state) => state.auth.user);
+const reduxCrops = useSelector((state) => state.crops.allCrops);
+const persistError = useSelector((state) => state.crops.persistError);
+const lastPersistMsgRef = useRef(null);
   const [form, setForm] = useState({
     name: "",
     category: "",
@@ -32,13 +45,76 @@ const Addcropform = ({ editCrop }) => {
     return errors[name] ? "error" : "valid";
   };
 
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
+  // localStorage quota is small (~5MB). Base64 images fill it quickly.
+  // We compress and downscale images before saving to keep the app stable.
+  const compressImageToDataUrl = async (file, opts = {}) => {
+    const { maxDim = 720, quality = 0.7 } = opts;
+    if (!file || !file.type?.startsWith("image/")) {
+      throw new Error("Please select an image file.");
+    }
+
+    // Basic guard: very large originals are likely to exceed quota even after compression.
+    if (file.size > 8 * 1024 * 1024) {
+      throw new Error("Image too large. Please choose an image under 8MB.");
+    }
+
+    // Prefer createImageBitmap (faster), fallback to Image() for older browsers.
+    let source = null;
+    try {
+      if (typeof createImageBitmap === "function") {
+        source = await createImageBitmap(file);
+      }
+    } catch {
+      source = null;
+    }
+
+    if (!source) {
+      const url = URL.createObjectURL(file);
+      try {
+        source = await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Failed to load image."));
+          img.src = url;
+        });
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    const srcW = source.width;
+    const srcH = source.height;
+    const scale = Math.min(1, maxDim / Math.max(srcW, srcH));
+    const dstW = Math.max(1, Math.round(srcW * scale));
+    const dstH = Math.max(1, Math.round(srcH * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = dstW;
+    canvas.height = dstH;
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) throw new Error("Canvas not supported.");
+
+    ctx.drawImage(source, 0, 0, dstW, dstH);
+
+    // Cleanup bitmap if we used it.
+    if (source && typeof source.close === "function") source.close();
+
+    return canvas.toDataURL("image/jpeg", quality);
+  };
+
+  useEffect(() => {
+    if (!persistError?.message) return;
+    if (lastPersistMsgRef.current === persistError.message) return;
+    lastPersistMsgRef.current = persistError.message;
+
+    if (persistError.type === "quota") {
+      toast.error(
+        "Storage full (localStorage limit). Please delete some crops or use smaller images."
+      );
+    } else {
+      toast.error("Failed to save crops. Please try again.");
+    }
+  }, [persistError]);
 
   const validators = {
     name: (v) =>
@@ -140,7 +216,7 @@ const Addcropform = ({ editCrop }) => {
 const handleChange = (e) => {
   let { name, value } = e.target;
 
-  // Only allow numbers & dot for specific fields
+  // Only allow numbers & dot for specific field mt-8 text-white mt-8 mt-4s
   if (["quantity", "basePrice", "auctionDuration", "temperature"].includes(name)) {
     value = value.replace(/[^0-9.]/g, "");
   }
@@ -156,17 +232,23 @@ const handleChange = (e) => {
   const handleImageChange = async (e, index) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const base64 = await fileToBase64(file);
+    let base64 = "";
+    try {
+      base64 = await compressImageToDataUrl(file, { maxDim: 720, quality: 0.7 });
+    } catch (err) {
+      toast.error(err?.message || "Failed to process image.");
+      return;
+    }
     const newImages = [...form.images];
     newImages[index] = base64;
     setForm((prev) => ({ ...prev, images: newImages }));
     setErrors((prev) => ({ ...prev, images: validators.images(newImages) }));
   };
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // Validate all fields
+  // Validate all field mt-8 text-white mt-8 mt-4s
   const newErrors = {};
   Object.keys(validators).forEach((key) => {
     newErrors[key] =
@@ -175,23 +257,21 @@ const handleSubmit = (e) => {
   setErrors(newErrors);
   if (Object.values(newErrors).some((err) => err)) return;
 
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (!loggedInUser || !loggedInUser.id) {
-    alert("Please login again");
-    return;
-  }
+ if (!user || !user.id) {
+  toast.error("Please login again");
+  return;
+}
 
-  const ownerId = loggedInUser.id;
-  const ownerName = `${loggedInUser.fname} ${loggedInUser.lname}`;
+const ownerId = user.id;
+const ownerName = `${user.fname} ${user.lname}`;
 
   const durationMs =
     form.auctionUnit === "hours"
       ? parseFloat(form.auctionDuration) * 60 * 60 * 1000
       : parseFloat(form.auctionDuration) * 60 * 1000;
 
-  const STORAGE_KEY = `farmerCrops_${ownerId}`;
-  let crops = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  let allCrops = JSON.parse(localStorage.getItem("allCrops")) || [];
+  // const STORAGE_KEY = `farmerCrops_${ownerId}`;
+  let crops = reduxCrops.filter((c) => c.ownerId === ownerId);
 
 if (editCrop) {
   crops = crops.map((c) => {
@@ -206,21 +286,20 @@ const prevEnd =
 let auctionStartTime = prevStart;
 let auctionEndTime = prevEnd;
 
-// 🟢 AUCTION RUNNING → recalc remaining time
-// 🟢 AUCTION RUNNING → reset from NOW using new duration
+// AUCTION RUNNING -> reset from NOW using new duration
 if (prevStart && prevEnd && now < prevEnd) {
   auctionStartTime = prevStart; // never touch
   auctionEndTime = now + durationMs;
 }
 
 
-// 🔴 AUCTION NOT STARTED
+// AUCTION NOT STARTED
 if (typeof prevStart !== "number") {
   auctionStartTime = null;
   auctionEndTime = null;
 }
 
-// 🟡 STATUS
+// STATUS
 let auctionStatus = "Not Started";
 if (auctionStartTime && auctionEndTime) {
   auctionStatus = now < auctionEndTime ? "Running" : "Ended";
@@ -230,7 +309,7 @@ if (auctionStartTime && auctionEndTime) {
     return {
       ...c,
 
-      // ✅ update ONLY editable crop fields
+      // Update ONLY editable crop field mt-8 text-white mt-8 mt-4s
       name: form.name,
       category: form.category,
       quantity: form.quantity,
@@ -247,7 +326,7 @@ if (auctionStartTime && auctionEndTime) {
       description: form.description,
       auctionUnit: form.auctionUnit,
 
-      // ✅ auction fields (never from form)
+      // Auction field mt-8 text-white mt-8 mt-4s (never from form)
       auctionDurationMs: durationMs,
       auctionStartTime,
       auctionEndTime,
@@ -255,17 +334,21 @@ if (auctionStartTime && auctionEndTime) {
     };
   });
 
-  allCrops = allCrops.map((c) =>
+ const updatedAllCrops = reduxCrops.map((c) =>
     c.id === editCrop.id ? crops.find((cc) => cc.id === c.id) : c
   );
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(crops));
-  localStorage.setItem("allCrops", JSON.stringify(allCrops));
+ const updatedCrop = updatedAllCrops.find(c => c.id === editCrop.id);
 
-  window.dispatchEvent(new Event("cropsUpdated"));
-  alert("Crop updated successfully!");
-  navigate("/myaddedcrops");
-  return;
+dispatch(updateCrop(updatedCrop));
+{
+  const after = store.getState()?.crops?.persistError;
+  if (!after) {
+    toast.success("Crop updated successfully!");
+    navigate("/myaddedcrops");
+  }
+}
+return;
 }
 
 
@@ -287,39 +370,75 @@ if (auctionStartTime && auctionEndTime) {
     bidders: form.bidders || [],
   };
 
-  crops.push(newCrop);
-  allCrops.push(newCrop);
+{
+  const before = store.getState()?.crops?.persistError;
+  dispatch(addCrop(newCrop));
+  const after = store.getState()?.crops?.persistError;
+  // If persist failed, an error toast will show via the persistError effect.
+  if (!after || after === before) {
+    // Supabase test write (no images; keeps localStorage schema untouched)
+    try {
+      const payload = {
+        local_id: newCrop.id,
+        owner_id: ownerId,
+        owner_name: ownerName,
+        name: newCrop.name,
+        category: newCrop.category,
+        quantity: Number(newCrop.quantity),
+        unit: newCrop.unit,
+        base_price: Number(newCrop.basePrice),
+        price_unit: newCrop.priceUnit,
+        harvest_date: newCrop.harvestDate || null,
+        crop_condition: newCrop.cropCondition || null,
+        state: newCrop.state || null,
+        city: newCrop.city || null,
+        address: newCrop.address || null,
+        temperature: newCrop.temperature ? Number(newCrop.temperature) : null,
+        description: newCrop.description || null,
+        auction_duration_ms: newCrop.auctionDurationMs,
+      };
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(crops));
-  localStorage.setItem("allCrops", JSON.stringify(allCrops));
+      const { error } = await supabase.from("crops_test").insert([payload]);
+      if (error) {
+        toast.error(`Supabase save failed: ${error.message}`);
+      } else {
+        toast.success("Saved to Supabase (test)");
+      }
+    } catch (err) {
+      toast.error("Supabase save failed (check .env keys)");
+    }
 
-  window.dispatchEvent(new Event("cropsUpdated"));
-  alert("Crop added successfully!");
-  navigate("/myaddedcrops");
+    toast.success("Crop added successfully!");
+    navigate("/myaddedcrops");
+  }
+}
 };
 
 
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="flex flex-col h-full w-full justify-center items-center bg-stone-500">
+     <h1 className="font-bold text-white pt-5" >Add Crop</h1>  
+     <form onSubmit={handleSubmit} className="flex mt-8">
+      
       <div className="row">
         {/* Left Column */}
         <div className="col1">
           {/* Name */}
-          <div className="field">
-            <label>Name</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Name</label>
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
-              className={getInputClass("name")}
+              className={`${getInputClass("name")} bg-white`}
             />
             <p className="errorMsg">{errors.name}</p>
           </div>
 
           {/* Category */}
-          <div className="field">
-            <label>Category</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Category</label>
             <select
               name="category"
               value={form.category}
@@ -342,8 +461,8 @@ if (auctionStartTime && auctionEndTime) {
           </div>
 
           {/* Quantity & Unit */}
-          <div className="field">
-            <label>Quantity</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Quantity</label>
             <input
               name="quantity"
               value={form.quantity}
@@ -364,8 +483,8 @@ if (auctionStartTime && auctionEndTime) {
           </div>
 
           {/* Base Price */}
-          <div className="field">
-            <label>Base Price</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Base Price</label>
             <input
               name="basePrice"
               value={form.basePrice}
@@ -384,14 +503,14 @@ if (auctionStartTime && auctionEndTime) {
 
           {/* Images */}
           {[0, 1, 2, 3].map((i) => (
-            <div className="field" key={i}>
-              <label>{i === 0 ? "Main Crop Image" : `Condition Image ${i}`}</label>
-              <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, i)} />
+            <div className="field mt-8 text-white mt-8 mt-4" key={i}>
+              <label className="font-semibold">{i === 0 ? "Main Crop Image" : `Condition Image ${i}`}</label>
+              <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, i)}  className="bg-white"/>
               {form.images[i] && (
                 <img
                   src={form.images[i]}
                   alt={`preview-${i}`}
-                  style={{ width: 120, height: 90, marginTop: 6, objectFit: "cover" }}
+                  className="w-[120px] h-[90px] mt-1.5 object-cover rounded-lg"
                 />
               )}
             </div>
@@ -402,8 +521,8 @@ if (auctionStartTime && auctionEndTime) {
         {/* Right Column */}
         <div className="col2">
           {/* Harvest Date */}
-          <div className="field">
-            <label>Harvest Date</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Harvest Date</label>
             <input
               type="date"
               name="harvestDate"
@@ -415,8 +534,8 @@ if (auctionStartTime && auctionEndTime) {
           </div>
 
           {/* Crop Condition */}
-          <div className="field">
-            <label>Crop Condition</label>
+          <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Crop Condition</label>
             <select
               name="cropCondition"
               value={form.cropCondition}
@@ -437,8 +556,8 @@ if (auctionStartTime && auctionEndTime) {
 
           {/* State, City, Address, Temperature */}
           {["state", "city", "address", "temperature"].map((f) => (
-            <div className="field" key={f}>
-              <label>{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+            <div className="field mt-8 text-white mt-8 mt-4" key={f}>
+              <label className="font-semibold">{f.charAt(0).toUpperCase() + f.slice(1)}</label>
               {f === "address" ? (
                 <textarea
                   name={f}
@@ -454,8 +573,11 @@ if (auctionStartTime && auctionEndTime) {
           ))}
 
           {/* Auction Duration */}
-          <div className="field">
-            <label>Auction Duration</label>
+     
+        </div>
+      </div>
+     <div className="field mt-8 text-white mt-8 mt-4">
+            <label className="font-semibold">Auction Duration</label>
             <input
               type="number"
               name="auctionDuration"
@@ -470,12 +592,9 @@ if (auctionStartTime && auctionEndTime) {
             </select>
             <p className="errorMsg">{errors.auctionDuration}</p>
           </div>
-        </div>
-      </div>
-
       {/* Description */}
-      <div className="field">
-        <label>Description</label>
+      <div className="field mt-8 text-white mt-8 mt-4">
+        <label className="font-semibold">Description</label>
         <textarea
           name="description"
           value={form.description}
@@ -489,6 +608,9 @@ if (auctionStartTime && auctionEndTime) {
         <button type="submit">{editCrop ? "Update Crop" : "Add Crop"}</button>
       </div>
     </form>
+    </div>
+ 
+    
   );
 };
 
@@ -530,3 +652,4 @@ export default Addcropform;
 
 
  
+

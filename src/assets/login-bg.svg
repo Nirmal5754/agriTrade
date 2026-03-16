@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <!-- Sky / light -->
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#071428"/>
+      <stop offset="0.33" stop-color="#0d2c49"/>
+      <stop offset="0.7" stop-color="#8bd3ff"/>
+      <stop offset="1" stop-color="#e9f7ff"/>
+    </linearGradient>
+
+    <radialGradient id="gSun" cx="78%" cy="18%" r="22%">
+      <stop offset="0" stop-color="#fff7cc" stop-opacity="1"/>
+      <stop offset="0.35" stop-color="#ffd37a" stop-opacity="0.95"/>
+      <stop offset="0.75" stop-color="#ff9a3c" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff7a2a" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="gRay" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Terrain -->
+    <linearGradient id="gHillBack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b6d53"/>
+      <stop offset="1" stop-color="#0b2e25"/>
+    </linearGradient>
+    <linearGradient id="gHillFront" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2ea36b"/>
+      <stop offset="1" stop-color="#1a5a3b"/>
+    </linearGradient>
+
+    <!-- Field palettes (pseudo PBR: highlight -> mid -> shadow) -->
+    <linearGradient id="gPlotA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5fbf4a"/>
+      <stop offset="0.55" stop-color="#2f8b44"/>
+      <stop offset="1" stop-color="#1f5a35"/>
+    </linearGradient>
+    <linearGradient id="gPlotB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#77d061"/>
+      <stop offset="0.55" stop-color="#38a455"/>
+      <stop offset="1" stop-color="#205f3b"/>
+    </linearGradient>
+    <linearGradient id="gSoil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a2b1a"/>
+      <stop offset="0.55" stop-color="#2a1f14"/>
+      <stop offset="1" stop-color="#17110b"/>
+    </linearGradient>
+
+    <!-- Water: reflection + caustics -->
+    <linearGradient id="gWater" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2bc6ff" stop-opacity="0.78"/>
+      <stop offset="0.35" stop-color="#0ea5e9" stop-opacity="0.72"/>
+      <stop offset="0.75" stop-color="#056b9d" stop-opacity="0.78"/>
+      <stop offset="1" stop-color="#034665" stop-opacity="0.85"/>
+    </linearGradient>
+
+    <!-- Grain / shader-ish noise -->
+    <filter id="fGrain" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+      <feColorMatrix type="matrix" in="n" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 0 0 0.12 0" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="overlay"/>
+    </filter>
+
+    <filter id="fSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="
+        0 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0 0
+        0 0 0 0.45 0" result="s"/>
+      <feOffset dy="12" dx="0" in="s" result="o"/>
+      <feMerge>
+        <feMergeNode in="o"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="fGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 0 0 0.55 0" result="g"/>
+      <feMerge>
+        <feMergeNode in="g"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Water caustics -->
+    <filter id="fCaustics" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="turbulence" baseFrequency="0.012" numOctaves="3" seed="9" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <!-- SKY -->
+  <rect width="1920" height="1080" fill="url(#gSky)"/>
+
+  <!-- SUN + glow -->
+  <circle cx="1505" cy="200" r="220" fill="url(#gSun)"/>
+  <circle cx="1505" cy="200" r="62" fill="#fff3b0" opacity="0.95" filter="url(#fGlow)"/>
+
+  <!-- Volumetric rays -->
+  <g opacity="0.45">
+    <path d="M1400 180 L820 690 L960 690 L1520 200 Z" fill="url(#gRay)"/>
+    <path d="M1530 210 L980 760 L1120 760 L1625 235 Z" fill="url(#gRay)"/>
+    <path d="M1460 250 L680 860 L840 860 L1510 285 Z" fill="url(#gRay)"/>
+  </g>
+
+  <!-- BACK HILLS -->
+  <path d="M0 510 C280 410, 560 430, 860 520 C1100 590, 1260 560, 1520 495 C1700 450, 1820 470, 1920 520 L1920 780 L0 780 Z"
+        fill="url(#gHillBack)" opacity="0.92"/>
+
+  <!-- FRONT HILLS -->
+  <path d="M0 640 C240 560, 560 570, 820 670 C1040 755, 1260 750, 1520 650 C1700 590, 1820 610, 1920 680 L1920 1080 L0 1080 Z"
+        fill="url(#gHillFront)"/>
+
+  <!-- FARMLAND BASE -->
+  <path d="M0 735 C300 700, 560 730, 860 840 C1120 935, 1360 1000, 1620 960 C1760 940, 1860 952, 1920 980 L1920 1080 L0 1080 Z"
+        fill="url(#gSoil)" opacity="0.85"/>
+
+  <!-- Perspective plots (3D-ish) -->
+  <g filter="url(#fGrain)" opacity="0.95">
+    <!-- Left plots -->
+    <polygon points="0,760 370,740 560,1080 0,1080" fill="url(#gPlotA)"/>
+    <polygon points="370,740 700,760 840,1080 560,1080" fill="url(#gPlotB)"/>
+    <polygon points="700,760 980,790 1060,1080 840,1080" fill="url(#gPlotA)"/>
+
+    <!-- Middle canal banks -->
+    <polygon points="980,790 1145,800 1215,1080 1060,1080" fill="#2a6b3f" opacity="0.95"/>
+    <polygon points="1405,770 1585,742 1920,760 1920,1080 1500,1080" fill="url(#gPlotB)"/>
+
+    <!-- Right plots -->
+    <polygon points="1145,800 1405,770 1500,1080 1215,1080" fill="url(#gPlotA)"/>
+  </g>
+
+  <!-- Field row highlights (specular-ish) -->
+  <g opacity="0.18">
+    <path d="M80 820 C260 790, 420 800, 580 860" stroke="#ffffff" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <path d="M420 850 C560 825, 710 835, 840 900" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M760 890 C900 868, 1040 878, 1160 940" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M1180 900 C1320 875, 1460 880, 1600 935" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- WATER CANAL -->
+  <g opacity="0.92">
+    <path d="M1040 840 C1180 805, 1320 780, 1505 700 C1620 650, 1760 630, 1920 650 L1920 1080 L1120 1080 Z"
+          fill="url(#gWater)" filter="url(#fCaustics)"/>
+    <!-- Water specular streaks -->
+    <path d="M1120 990 C1260 940, 1400 900, 1560 820 C1680 760, 1800 735, 1920 750"
+          fill="none" stroke="#c9f3ff" stroke-opacity="0.35" stroke-width="8" stroke-linecap="round"/>
+    <path d="M1160 1030 C1280 985, 1440 930, 1600 860 C1720 810, 1820 785, 1920 795"
+          fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Drone + shadow (more depth) -->
+  <g transform="translate(365 250) scale(1.25)">
+    <!-- shadow on ground -->
+    <ellipse cx="130" cy="188" rx="110" ry="32" fill="#000" opacity="0.22" filter="url(#fSoftShadow)"/>
+    <!-- drone body -->
+    <g filter="url(#fSoftShadow)">
+      <rect x="86" y="42" width="88" height="24" rx="12" fill="#0b0f17"/>
+      <rect x="112" y="30" width="36" height="18" rx="9" fill="#0b0f17"/>
+      <circle cx="60" cy="54" r="18" fill="#0b0f17"/>
+      <circle cx="200" cy="54" r="18" fill="#0b0f17"/>
+      <path d="M60 54 L86 54 M174 54 L200 54" stroke="#0b0f17" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="60" cy="54" r="7" fill="#2dd4bf" opacity="0.95"/>
+      <circle cx="200" cy="54" r="7" fill="#60a5fa" opacity="0.95"/>
+    </g>
+    <!-- tiny spray mist -->
+    <g opacity="0.22">
+      <path d="M120 76 C130 95, 120 120, 132 142" stroke="#e0f2ff" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <path d="M150 76 C158 98, 148 124, 160 146" stroke="#e0f2ff" stroke-width="6" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Auction concept overlay: bid waves + price tag -->
+  <g opacity="0.25">
+    <path d="M1060 350 C1180 265, 1320 265, 1445 350" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M1088 382 C1190 315, 1310 315, 1418 382" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+    <path d="M1115 414 C1205 355, 1295 355, 1390 414" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+
+    <g transform="translate(1480 330) rotate(14)">
+      <rect x="0" y="0" width="150" height="86" rx="14" fill="#000" opacity="0.32"/>
+      <rect x="6" y="6" width="138" height="74" rx="12" fill="#ffffff" opacity="0.16"/>
+      <path d="M24 44 H126" stroke="#fff" stroke-opacity="0.45" stroke-width="6" stroke-linecap="round"/>
+      <path d="M34 26 H94" stroke="#fff" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+      <path d="M34 62 H82" stroke="#fff" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Vignette for readability behind your form -->
+  <radialGradient id="gV" cx="35%" cy="40%" r="70%">
+    <stop offset="0" stop-color="#000" stop-opacity="0"/>
+    <stop offset="0.62" stop-color="#000" stop-opacity="0.12"/>
+    <stop offset="1" stop-color="#000" stop-opacity="0.34"/>
+  </radialGradient>
+  <rect width="1920" height="1080" fill="url(#gV)"/>
+</svg>

@@ -1,29 +1,180 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../Redux/Slices/authSlice";
 
 const Bnavbar = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const user = useSelector((s) => s.auth.user);
+
+  const [open, setOpen] = useState(false);
+
+  const initials = useMemo(() => {
+    const name = `${user?.fname || ""} ${user?.lname || ""}`.trim();
+    if (!name) return "U";
+    const parts = name.split(/\s+/).filter(Boolean);
+    return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "U";
+  }, [user?.fname, user?.lname]);
+
+  const linkBtnClass = ({ isActive }) =>
+    `px-3 py-2 rounded-md text-white no-underline font-semibold transition ${
+      isActive ? "bg-white/15" : "hover:bg-white/10"
+    }`;
+
+  const goToLogin = () => {
+    dispatch(logoutUser());
+    setOpen(false);
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // If the user resizes from mobile -> desktop while the drawer is open,
+  // close it so they don't see both desktop nav + drawer at the same time.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = (e) => {
+      if (e.matches) setOpen(false);
+    };
+
+    // Run once in case we mounted at desktop size.
+    if (mq.matches) setOpen(false);
+
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else mq.addListener(onChange);
+
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
+      else mq.removeListener(onChange);
+    };
+  }, []);
 
   return (
-   
-      <div className='z-100 grid fixed grid-flow-col bg-green-800 items-center min-w-screen left-0 py-5 top-0 text-white font-semibold'>
-       
-        <div className='grid-cols-2 justify-center text-center'> <i>Logo</i></div>
-          <nav className="bnavbar grid-cols-10 justify-center text-center">
-        <ul className="bmenus flex gap-15">
-          <li><NavLink to="/bhome">Home</NavLink></li>
-          <li><NavLink to="/mybidlist">My Bids</NavLink></li>
-          <li><NavLink to="/bleaderboard">Leaderboard</NavLink></li>
-          <li><NavLink to="/bchats">Chats</NavLink></li>
-          <li>
-            <button onClick={() => navigate("/login")} className='ml-35'>Go to Login</button>
-          </li>
-        </ul>
-      </nav>
-      </div>
+    <>
+      <header className="sticky top-0 z-50 bg-green-800 text-white">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
+          <div className="font-bold ml-10">
+            <i className="ml-10"><img src="/src/assets/allu.png" alt="" className="h-20 w-40" /></i>
+          </div>
 
-    
-   
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-20 ml-50 justify-between">
+            <NavLink to="/bhome" className={linkBtnClass}>
+              Home
+            </NavLink>
+            <NavLink to="/mybidlist" className={linkBtnClass}>
+              My Bids
+            </NavLink>
+            <NavLink to="/bleaderboard" className={linkBtnClass}>
+              Leaderboard
+            </NavLink>
+            <NavLink to="/bchats" className={linkBtnClass}>
+              Chats
+            </NavLink>
+          </nav>
+
+          {/* Desktop right actions */}
+          <div className="hidden md:flex items-center gap-7 ml-90">
+            <div
+              className="grid h-[34px] w-[34px] place-items-center rounded-full bg-yellow-400 text-amber-950 font-extrabold"
+              title={`${user?.fname || ""} ${user?.lname || ""}`.trim() || "User"}
+            >
+              {initials}
+            </div>
+            <button
+              type="button"
+              onClick={goToLogin}
+              className="rounded-md bg-white px-3 py-1.5 text-sm font-bold text-neutral-900 shadow-sm transition hover:bg-neutral-100 active:scale-[0.99]"
+            >
+              Go to Login
+            </button>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            className="md:hidden ml-auto rounded-md border border-white/70 px-3 py-1.5 text-sm font-bold text-white shadow-sm transition hover:bg-white/10 active:scale-[0.99]"
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={open}
+          >
+            Menu
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+          />
+          <aside className="absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-green-800 text-white shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/20">
+              <div className="font-bold">Buyer Menu</div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md px-2 py-1 font-bold hover:bg-white/10"
+                aria-label="Close"
+              >
+                X
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-1 p-3">
+              <NavLink to="/bhome" onClick={() => setOpen(false)} className={linkBtnClass}>
+                Home
+              </NavLink>
+              <NavLink to="/mybidlist" onClick={() => setOpen(false)} className={linkBtnClass}>
+                My Bids
+              </NavLink>
+              <NavLink to="/bleaderboard" onClick={() => setOpen(false)} className={linkBtnClass}>
+                Leaderboard
+              </NavLink>
+              <NavLink to="/bchats" onClick={() => setOpen(false)} className={linkBtnClass}>
+                Chats
+              </NavLink>
+            </nav>
+
+            <div className="mt-auto p-4 border-t border-white/20">
+              <div className="flex items-center gap-3">
+                <div
+                  className="grid h-[38px] w-[38px] place-items-center rounded-full bg-yellow-400 text-amber-950 font-extrabold"
+                  title={`${user?.fname || ""} ${user?.lname || ""}`.trim() || "User"}
+                >
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold truncate">
+                    {`${user?.fname || ""} ${user?.lname || ""}`.trim() || "User"}
+                  </div>
+                  <div className="text-white/75 text-xs font-semibold">Buyer</div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={goToLogin}
+                className="mt-4 w-full rounded-md bg-white px-4 py-2 text-sm font-bold text-neutral-900 shadow-sm transition hover:bg-neutral-100 active:scale-[0.99]"
+              >
+                Go to Login
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 

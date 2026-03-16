@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { selectUserBids } from "../../Redux/Slices/bidSlice";
+import { selectAllCrops } from "../../Redux/Slices/cropSlice";
 
 const CATEGORY_OPTIONS = [
   "",
@@ -21,29 +24,21 @@ const humanCategory = (cat) =>
 const BHome = () => {
   const navigate = useNavigate();
 
-  const [allCrops, setAllCrops] = useState([]);
+
+
   const [filteredCrops, setFilteredCrops] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
 
-  const loggedInUser =
-    JSON.parse(localStorage.getItem("loggedInUser")) || null;
+const user = useSelector((state) => state.auth.user);
+const allCrops = useSelector(selectAllCrops);
 
-  const myBids =
-    loggedInUser
-      ? JSON.parse(localStorage.getItem(`myBids_${loggedInUser.id}`)) || []
-      : [];
 
-  useEffect(() => {
-    const load = () => {
-      const stored = JSON.parse(localStorage.getItem("allCrops")) || [];
-      setAllCrops(stored);
-    };
+const myBids = useSelector((state) => selectUserBids(state, user?.id));
 
-    load();
-    window.addEventListener("cropsUpdated", load);
-    return () => window.removeEventListener("cropsUpdated", load);
-  }, []);
+
+
+
 
   useEffect(() => {
     const term = searchTerm.toLowerCase();
@@ -61,7 +56,8 @@ const BHome = () => {
     myBids.some((bid) => bid.id === cropId);
 
   const getAuctionResult = (crop) => {
-    if (!loggedInUser) return null;
+  if (!user) return null;
+
 
     const ended = Date.now() >= crop.auctionEndTime;
     if (!ended) return null;
@@ -72,30 +68,31 @@ const BHome = () => {
 
     if (!bidders.length) return null;
 
-    return bidders[0].userId === loggedInUser.id ? "WON" : "LOST";
+  return bidders[0].userId === user.id ? "WON" : "LOST";
+
   };
 
   const handleBid = (crop) => {
-    localStorage.setItem("bidOnCrop", JSON.stringify(crop));
-    navigate("/bidportal");
+   navigate(`/bidportal/${crop.id}`);
+
   };
 
   return (
-    <div className="bmain parent bottom-50 relative min-w-screen min-h-screen">
+    <div className="bmain parent w-full min-h-screen px-4 sm:px-6 lg:px-8">
         <h2 className="text-center font-bold text-lg">Crops</h2>
-      <div className="bmheader flex gap-20 justify-around p-5 m-5 bg-amber-800">
+      <div className="bmheader flex flex-col sm:flex-row gap-4 sm:gap-6 items-stretch sm:items-center justify-between p-4 sm:p-5 my-4 rounded-lg bg-amber-800">
       
 
         <input
           type="search"
           placeholder="      Search crop"
-          onChange={(e) => setSearchTerm(e.target.value)} className="bg-white rounded-lg p-2 w-200 border-none text-white-800 outline-none"
+          onChange={(e) => setSearchTerm(e.target.value)} className="bg-white rounded-lg px-3 py-2 w-full sm:max-w-sm border border-transparent text-neutral-900 outline-none focus:ring-2 focus:ring-amber-300"
         />
 
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="bg-white rounded-lg outline-none w-80 px-5 font-semibold"
+          className="bg-white rounded-lg outline-none w-full sm:w-64 px-4 py-2 font-semibold text-neutral-900"
         >
           <option value="">&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All categories</option>
           {CATEGORY_OPTIONS.filter(Boolean).map((opt) => (
@@ -106,9 +103,9 @@ const BHome = () => {
         </select>
       </div>
 
-      <div className="b-cards-grid flex gap-20 ml-15 mt-10 justify-start">
+      <div className="b-cards-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-6">
         {filteredCrops.length === 0 ? (
-          <p className="relative top-[50vh] left-[50vw]">No crops available</p>
+          <p className="col-span-full text-center py-10 font-semibold text-neutral-700">No crops available</p>
         ) : (
           filteredCrops.map((crop) => {
             const participated = hasParticipated(crop.id);
@@ -118,8 +115,8 @@ const BHome = () => {
             const result = getAuctionResult(crop);
 
             return (
-              <div key={crop.id} className="b-crop-card flex flex-col gap-3 bg-amber-200 shadow-lg p-5 items-center justify-center text-center font-semibold rounded-lg">
-                <img src={crop.images?.[0] || ""} alt={crop.name}  className="rounded-lg"/>
+              <div key={crop.id} className="b-crop-card flex flex-col gap-3 bg-amber-200 shadow-lg p-4 sm:p-5 items-center justify-center text-center font-semibold rounded-lg w-full">
+                <img src={crop.images?.[0] || ""} alt={crop.name}  className="rounded-lg w-full h-40 object-cover"/>
 
                 <h3 className="text-xl font-bold text-green-500">{crop.name}</h3>
 
@@ -134,47 +131,44 @@ const BHome = () => {
                 </p>
 
                 <p>
-                  <strong className="text-amber-900">Base Price:</strong> <span className="text-green-700"> ₹{crop.basePrice}</span>
+                  <strong className="text-amber-900">Base Price:</strong>{" "}
+                  <span className="text-green-700">
+                    {"\u20B9"}
+                    {crop.basePrice}
+                  </span>
                 </p>
 
-                {/* ✅ STATUS MESSAGE */}
+                {/* STATUS MESSAGE */}
                 {!ended && participated && (
-                  <p style={{ fontWeight: "bold", color: "#555" }}>
+                  <p className="font-bold text-neutral-600">
                     You have already participated
                   </p>
                 )}
 
                 {ended && result === "WON" && (
-                  <p style={{ fontWeight: "bold", color: "green" }}>
+                  <p className="font-bold text-green-700">
                     You won the auction
                   </p>
                 )}
 
                 {ended && result === "LOST" && (
-                  <p style={{ fontWeight: "bold", color: "red" }}>
+                  <p className="font-bold text-red-600">
                     You lost the auction
                   </p>
                 )}
 
-                {/* ✅ BUTTON */}
+                {/* BUTTON */}
                 <button
                   disabled={ended || participated}
                   onClick={() => handleBid(crop)}
-                  style={{
-                    background:
-                      ended || participated ? "#a3b2ab" : "#007bff",
-                    cursor:
-                      ended || participated
-                        ? "not-allowed"
-                        : "pointer",
-                  }}  
-                  className="rounded-lg px-4 py-1"
+                  className={[
+                    "rounded-lg px-4 py-2 w-full sm:w-auto text-white font-semibold transition",
+                    ended || participated
+                      ? "bg-slate-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800",
+                  ].join(" ")}
                 >
-                  {ended
-                    ? "Bid"
-                    : participated
-                    ? "Participated"
-                    : "Bid"}
+                  {ended ? "Bid" : participated ? "Participated" : "Bid"}
                 </button>
               </div>
             );
@@ -186,3 +180,5 @@ const BHome = () => {
 };
 
 export default BHome;
+
+

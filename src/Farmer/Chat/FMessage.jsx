@@ -1,29 +1,30 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation } from "react-router-dom";
+import { selectAllCrops } from "../../Redux/Slices/cropSlice";
+import { appendChatMessage, hydrateChat, selectChatMessages } from "../../Redux/Slices/chatSlice";
 
 const FMessage = () => {
   const { cropId } = useParams();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const passedWinner = location.state?.winner;
-  const farmer = JSON.parse(localStorage.getItem("loggedInUser"));
+  const farmer = useSelector((state) => state.auth.user);
+  const allCrops = useSelector(selectAllCrops);
 
   const [crop, setCrop] = useState(null);
   const [winner, setWinner] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [auctionEnded, setAuctionEnded] = useState(false);
+  const [chatKey, setChatKey] = useState("");
 
-  /* =========================
-     LOAD CROP + WINNER (SAFE)
-     ========================= */
+  const messages = useSelector((state) => selectChatMessages(state, chatKey));
+
   useEffect(() => {
-    const allCrops =
-      JSON.parse(localStorage.getItem("allCrops")) || [];
+    if (!farmer) return;
 
-    const found = allCrops.find(
-      (c) => String(c.id) === String(cropId)
-    );
+    const found = allCrops.find((c) => String(c.id) === String(cropId));
     if (!found) return;
 
     setCrop(found);
@@ -31,116 +32,90 @@ const FMessage = () => {
     const ended = Date.now() >= found.auctionEndTime;
     setAuctionEnded(ended);
 
-    if (ended) {
-      const sorted = [...(found.bidders || [])].sort(
-        (a, b) =>
-          (b.price || b.bidPrice) -
-          (a.price || a.bidPrice)
-      );
-      setWinner(passedWinner || sorted[0] || null);
+    if (!ended) {
+      setWinner(null);
+      setChatKey("");
+      return;
     }
-  }, [cropId, passedWinner]);
 
-  /* =========================
-     LOAD CHAT
-     ========================= */
+    const sorted = [...(found.bidders || [])].sort(
+      (a, b) => (b.price || b.bidPrice) - (a.price || a.bidPrice)
+    );
+    const resolvedWinner = passedWinner || sorted[0] || null;
+    setWinner(resolvedWinner);
+
+    if (resolvedWinner?.userId) {
+      setChatKey(`chat_${found.id}_${farmer.id}_${resolvedWinner.userId}`);
+    } else {
+      setChatKey("");
+    }
+  }, [cropId, passedWinner, farmer, allCrops]);
+
   useEffect(() => {
-    if (!crop || !winner || !farmer) return;
-
-    const CHAT_KEY = `chat_${crop.id}_${farmer.id}_${winner.userId}`;
-
-    const reloadChat = () => {
-      const saved =
-        JSON.parse(localStorage.getItem(CHAT_KEY)) || [];
-      setMessages(saved);
-    };
-
-    reloadChat();
-    window.addEventListener("chatUpdated", reloadChat);
-
-    return () =>
-      window.removeEventListener("chatUpdated", reloadChat);
-  }, [crop, winner, farmer]);
+    if (!chatKey) return;
+    dispatch(hydrateChat({ key: chatKey }));
+  }, [chatKey, dispatch]);
 
   const sendMessage = () => {
-    if (!text.trim() || !crop || !winner) return;
+    if (!text.trim() || !chatKey) return;
 
-    const CHAT_KEY = `chat_${crop.id}_${farmer.id}_${winner.userId}`;
-
-    const updated = [
-      ...messages,
-      { sender: "farmer", text: text.trim(), time: Date.now() }
-    ];
-
-    setMessages(updated);
+    dispatch(
+      appendChatMessage({
+        key: chatKey,
+        message: { sender: "farmer", text: text.trim(), time: Date.now() }
+      })
+    );
     setText("");
-    localStorage.setItem(CHAT_KEY, JSON.stringify(updated));
-    window.dispatchEvent(new Event("chatUpdated"));
   };
 
-  if (!crop || !winner) {
+  if (!crop || !winner)
     return (
-      <div style={{ padding: 20, textAlign: "center" }}>
+      <div className="w-full p-5 text-center font-semibold text-neutral-700">
         Loading chat...
       </div>
     );
-  }
-
-  if (!auctionEnded) {
+  if (!auctionEnded)
     return (
-      <div style={{ padding: 20, textAlign: "center" }}>
-        🔒 Chat is available only after auction ends
+      <div className="w-full p-5 text-center font-semibold text-neutral-700">
+        Chat is available only after auction ends
       </div>
     );
-  }
+
+  const buyerName = winner.userName || winner.name || "Buyer";
+  const buyerInitials = buyerName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("");
 
   return (
     <div
-      style={{
-        height: "80vh",
-        display: "flex",
-        flexDirection: "column",
-        border: "1px solid #ccc",
-        borderRadius: 10
-      }}
+      className="w-full max-w-3xl mx-auto px-4 sm:px-6 h-[80vh] flex flex-col justify-center border border-gray-300 rounded-[10px] pb-5"
     >
-      <div
-        style={{
-          padding: 12,
-          borderBottom: "1px solid #ccc",
-          fontWeight: "bold"
-        }}
-      >
-        Chat with Buyer — {winner.userName || winner.name}
+      <div className="p-4 rounded-t-lg border-gray-300 bg-emerald-600">
+        <span className="flex items-center font-semibold text-white">
+          <div className="border bg-yellow-500 border-none rounded-full px-2 py-1 font-bold text-yellow-100">
+            {buyerInitials}
+          </div>
+          &nbsp; {buyerName}
+        </span>
       </div>
 
-      <div
-        style={{
-          flex: 1,
-          padding: 15,
-          background: "#f5f5f5",
-          overflowY: "auto"
-        }}
-      >
+      <div className="flex-1 p-4 bg-[#49361c] overflow-y-auto">
         {messages.map((m, i) => (
           <div
             key={i}
-            style={{
-              textAlign:
-                m.sender === "farmer" ? "right" : "left",
-              marginBottom: 10
-            }}
-            className="mt-3"
+            className={[
+              "mb-2.5 flex",
+              m.sender === "farmer" ? "justify-end" : "justify-start",
+            ].join(" ")}
           >
             <span
-              style={{
-              
-                borderRadius: 10,
-                background:
-                  m.sender === "farmer" ? "#dcf8c6" : "#fff",
-                border: "1px solid #ccc"
-              }}
-     className="p-3 m-3"
+              className={[
+                "px-3 py-2 rounded-[10px] inline-block max-w-[70%] text-white font-semibold",
+                m.sender === "farmer" ? "bg-[#a57c14]" : "bg-[#66481e]",
+              ].join(" ")}
             >
               {m.text}
             </span>
@@ -148,24 +123,20 @@ const FMessage = () => {
         ))}
       </div>
 
-      <div
-        style={{
-          padding: 10,
-          borderTop: "1px solid #ccc",
-          display: "flex",
-          gap: 10
-        }}
-      >
+      <div className="p-2.5 flex gap-5 justify-center bg-[#49361c]">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message"
-          style={{ flex: 1, padding: 8 }}
+          className="flex-1 w-full px-3 py-3 bg-[#66481e] rounded-xl text-white font-semibold outline-none"
         />
-        <button onClick={sendMessage} className="bg-green-600 rounded-lg p-2 font-semibold text-white">Send</button>
+        <button onClick={sendMessage} className="rounded-xl bg-yellow-600 px-4 py-1 text-white font-semibold">
+          Send
+        </button>
       </div>
     </div>
   );
 };
 
 export default FMessage;
+

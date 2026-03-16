@@ -1,16 +1,23 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectAllCrops } from "../../Redux/Slices/cropSlice";
+
 
 const BiddersList = () => {
   const [crops, setCrops] = useState([]);
 
-  const loadData = () => {
-    const farmer = JSON.parse(localStorage.getItem("loggedInUser"));
+const farmer = useSelector((state) => state.auth.user);
+const allCrops = useSelector(selectAllCrops);
+
+const loadData = () => {
+
+
     if (!farmer?.id) return;
 
-    const allCrops = JSON.parse(localStorage.getItem("allCrops")) || [];
+
     const now = Date.now();
 
-    // ✅ Show all crops whose auction has started or is active
+    // Show all crops whose auction has started or is active
     const visibleCrops = allCrops
       .filter(
         (crop) =>
@@ -31,13 +38,14 @@ const BiddersList = () => {
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 1000);
-    window.addEventListener("cropsUpdated", loadData);
+    
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener("cropsUpdated", loadData);
+     
     };
-  }, []);
+}, [farmer?.id, allCrops]);
+
 
   const getStatus = (rank, ended) => {
     if (ended) return rank === 1 ? "Won" : "Lost";
@@ -47,11 +55,13 @@ const BiddersList = () => {
   };
 
   return (
-    <div className="relative bottom-50">
-      <h2 className="text-center font-bold text-xl relative bottom-3 p-3">Bidders List</h2>
+    <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 py-6">
+      <h2 className="text-center font-bold text-xl p-3">Bidders List</h2>
 
       {crops.length === 0 && (
-        <p>No auctions have started yet.</p>
+        <p className="text-center py-10 font-semibold text-neutral-700">
+          No auctions have started yet.
+        </p>
       )}
 
       {crops.map((crop) => {
@@ -65,21 +75,19 @@ const BiddersList = () => {
         return (
           <div
             key={crop.id}
-            style={{
-              borderRadius: "8px",
-              padding: "15px",
-              marginBottom: "25px",
-            }}
-
+            className="rounded-lg p-4 mb-6"
           >
             <div>
             <h3 className="font-semibold">{crop.name}</h3>
-            <p className="font-semibold">Base Price: ₹{crop.basePrice}</p>
+            <p className="font-semibold">
+              Base Price: {"\u20B9"}
+              {crop.basePrice}
+            </p>
             <p className="font-semibold">
               Auction Status: <strong className={`${ended ? "text-gray-500" : "text-green-200" }`}>{ended ? "Ended" : "Running"}</strong>
             </p></div> <br />
- <div>
-            <table width="100%" border="1" className="border w-200 border-gray-300 rounded-lg">
+ <div className="w-full overflow-x-auto">
+            <table width="100%" border="1" className="border min-w-[640px] w-full border-gray-300 rounded-lg text-sm">
               <thead>
                 <tr className="border-gray-400">
                   <th className="border bg-green-700  border-gray-300 text-center text-yellow-100">Rank</th>
@@ -101,7 +109,10 @@ const BiddersList = () => {
                     <tr key={b.userId} className="border  border-gray-300 ">
                       <td className="border  border-gray-300 text-center font-semibold" >{i + 1}</td>
                       <td className="border  border-gray-300 text-center font-semibold">{b.name}</td>
-                      <td className="border  border-gray-300 text-center font-semibold">₹{b.price}</td>
+                      <td className="border  border-gray-300 text-center font-semibold">
+                        {"\u20B9"}
+                        {b.price}
+                      </td>
                       <td className={`border  border-gray-300 text-center font-semibold ${getStatus(i + 1, ended) === 'Won' ?'text-green-400':getStatus(i + 1, ended) === 'Lost' ? 'text-red-700':'text-orange-100'} font-semibold`}>{getStatus(i + 1, ended)}</td>
                     </tr>
                   ))
@@ -117,3 +128,9 @@ const BiddersList = () => {
 };
 
 export default BiddersList;
+
+
+
+
+
+
