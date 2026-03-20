@@ -1,7 +1,7 @@
 ﻿
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Addcropform.css";
+// import "./Addcropform.css";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import { addCrop, updateCrop } from "../../Redux/Slices/cropSlice";
 import { toast } from "../../ui/toast";
@@ -216,7 +216,7 @@ const lastPersistMsgRef = useRef(null);
 const handleChange = (e) => {
   let { name, value } = e.target;
 
-  // Only allow numbers & dot for specific field mt-8 text-white mt-8 mt-4s
+  // Only allow numbers & dot for specific field  text-white  mt-20s
   if (["quantity", "basePrice", "auctionDuration", "temperature"].includes(name)) {
     value = value.replace(/[^0-9.]/g, "");
   }
@@ -248,7 +248,7 @@ const handleChange = (e) => {
 const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // Validate all field mt-8 text-white mt-8 mt-4s
+  // Validate all field  text-white  mt-20s
   const newErrors = {};
   Object.keys(validators).forEach((key) => {
     newErrors[key] =
@@ -309,7 +309,7 @@ if (auctionStartTime && auctionEndTime) {
     return {
       ...c,
 
-      // Update ONLY editable crop field mt-8 text-white mt-8 mt-4s
+      // Update ONLY editable crop field  text-white  mt-20s
       name: form.name,
       category: form.category,
       quantity: form.quantity,
@@ -326,7 +326,7 @@ if (auctionStartTime && auctionEndTime) {
       description: form.description,
       auctionUnit: form.auctionUnit,
 
-      // Auction field mt-8 text-white mt-8 mt-4s (never from form)
+      // Auction field  text-white  mt-20s (never from form)
       auctionDurationMs: durationMs,
       auctionStartTime,
       auctionEndTime,
@@ -417,195 +417,210 @@ return;
 
 
   return (
-    <div className="flex flex-col h-full w-full justify-center items-center bg-stone-500">
-     <h1 className="font-bold text-white pt-5" >Add Crop</h1>  
-     <form onSubmit={handleSubmit} className="flex mt-8">
+    <div className="flex flex-col h-full w-full justify-center items-center bg-slate-500 text-green-900">
+     <h1 className="font-extrabold text-white mb-10 text-6xl mt-10" >Add Crop</h1>  
+     <form onSubmit={handleSubmit} className="">
       
-      <div className="row">
+      <div className="row flex gap-30">
         {/* Left Column */}
         <div className="col1">
           {/* Name */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Name</label>
+          <div className="field  text-white  mt-20">
+            <label className="font-semibold text-white">Name</label>
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
-              className={`${getInputClass("name")} bg-white`}
+              className={`${getInputClass("name")} bg-white rounded-md outline outline-3 outline-black-900 ml-4 px-3 py-1 `}
             />
-            <p className="errorMsg">{errors.name}</p>
+            <p className="errorMsg text-red-200">{errors.name}</p>
           </div>
 
           {/* Category */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Category</label>
+          <div className="field  text-white  mt-20">
+             <label className="font-semibold text-white">Category</label>
             <select
               name="category"
               value={form.category}
               onChange={handleChange}
-              className={getInputClass("category")}
+              className={`${getInputClass("category")} font-semibold text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
             >
-              <option value="">Select Category</option>
-              <option value="vegetables">Vegetables</option>
-              <option value="fruits">Fruits</option>
-              <option value="cereals">Cereals</option>
-              <option value="pulses">Pulses</option>
-              <option value="oilseeds">Oilseeds</option>
-              <option value="spices">Spices</option>
-              <option value="leafy_greens">Leafy Greens</option>
-              <option value="nuts">Nuts</option>
-              <option value="flowers">Flowers</option>
-              <option value="others">Others</option>
+              <option value="" className="font-semibold">Select Category</option>
+              <option value="vegetables" className="font-semibold">Vegetables</option>
+              <option value="fruits" className="font-semibold">Fruits</option>
+              <option value="cereals" className="font-semibold">Cereals</option>
+              <option value="pulses" className="font-semibold">Pulses</option>
+              <option value="oilseeds" className="font-semibold">Oilseeds</option>
+              <option value="spices" className="font-semibold">Spices</option>
+              <option value="leafy_greens" className="font-semibold">Leafy Greens</option>
+              <option value="nuts" className="font-semibold">Nuts</option>
+              <option value="flowers" className="font-semibold">Flowers</option>
+              <option value="others" className="font-semibold">Others</option>
             </select>
-            <p className="errorMsg">{errors.category}</p>
+            <p className="errorMsg text-red-200">{errors.category}</p>
           </div>
 
           {/* Quantity & Unit */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Quantity</label>
+          <div className="field  text-white  mt-20">
+            <label className="font-semibold text-white">Quantity</label>
             <input
               name="quantity"
               value={form.quantity}
               onChange={handleChange}
-              className={getInputClass("quantity")}
+              className={`${getInputClass("quantity")}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
             />
-            <select name="unit" value={form.unit} onChange={handleChange}>
-              <option value="kg">kg</option>
-              <option value="quintal">Quintal</option>
-              <option value="ton">Ton</option>
-              <option value="grams">Grams</option>
-              <option value="pieces">Pieces</option>
-              <option value="bunch">Bunch</option>
-              <option value="bag">Bag</option>
-              <option value="crate">Crate</option>
+            <select name="unit" value={form.unit} onChange={handleChange} className="font-semibold  text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4">
+              <option value="kg" className="font-semibold">kg</option>
+              <option value="quintal" className="font-semibold">Quintal</option>
+              <option value="ton" className="font-semibold">Ton</option>
+              <option value="grams" className="font-semibold">Grams</option>
+              <option value="pieces" className="font-semibold">Pieces</option>
+              <option value="bunch" className="font-semibold">Bunch</option>
+              <option value="bag" className="font-semibold">Bag</option>
+              <option value="crate" className="font-semibold">Crate</option>
             </select>
-            <p className="errorMsg">{errors.quantity}</p>
+            <p className="errorMsg text-red-200">{errors.quantity}</p>
           </div>
 
           {/* Base Price */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Base Price</label>
+          <div className="field  text-white  mt-20">
+             <label className="font-semibold text-white">Base Price</label>
             <input
               name="basePrice"
               value={form.basePrice}
               onChange={handleChange}
-              className={getInputClass("basePrice")}
+              className={`${getInputClass("basePrice")}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
             />
-            <select name="priceUnit" value={form.priceUnit} onChange={handleChange}>
-              <option value="per kg">per kg</option>
-              <option value="per quintal">per quintal</option>
-              <option value="per ton">per ton</option>
-              <option value="per bag">per bag</option>
-              <option value="per piece">per piece</option>
+            <select name="priceUnit" value={form.priceUnit} onChange={handleChange} className=" font-semibold text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4">
+              <option value="per kg" className="font-semibold">per kg</option>
+              <option value="per quintal" className="font-semibold">per quintal</option>
+              <option value="per ton" className="font-semibold">per ton</option>
+              <option value="per bag" className="font-semibold">per bag</option>
+              <option value="per piece" className="font-semibold">per piece</option>
             </select>
-            <p className="errorMsg">{errors.basePrice}</p>
+            <p className="errorMsg text-red-200">{errors.basePrice}</p>
           </div>
 
           {/* Images */}
           {[0, 1, 2, 3].map((i) => (
-            <div className="field mt-8 text-white mt-8 mt-4" key={i}>
-              <label className="font-semibold">{i === 0 ? "Main Crop Image" : `Condition Image ${i}`}</label>
-              <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, i)}  className="bg-white"/>
-              {form.images[i] && (
-                <img
-                  src={form.images[i]}
-                  alt={`preview-${i}`}
-                  className="w-[120px] h-[90px] mt-1.5 object-cover rounded-lg"
-                />
-              )}
-            </div>
+           <div className="field text-white mt-20" key={i}>
+   <label className="font-semibold text-white">
+    {i === 0 ? "Main Crop Image" : `Condition Image ${i}`}
+  </label>
+
+  <label className="ml-4 cursor-pointer bg-white text-green-700 font-semibold px-4  outline outline-1 outline-green-100 rounded-md inline-block">
+    Choose File
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => handleImageChange(e, i)}
+      className="hidden"
+    />
+  </label>
+
+  {form.images[i] && (
+    <img
+      src={form.images[i]}
+      alt={`preview-${i}`}
+      className="w-[60px] h-[60px] mt-1.5 object-cover rounded-lg"
+    />
+  )}
+</div>
           ))}
           <p className="errorMsg">{errors.images}</p>
-        </div>
+       
 
         {/* Right Column */}
-        <div className="col2">
+      
           {/* Harvest Date */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Harvest Date</label>
+          <div className="field  text-white  mt-20">
+             <label className="font-semibold text-white">Harvest Date</label>
             <input
               type="date"
               name="harvestDate"
               value={form.harvestDate}
               onChange={handleChange}
-              className={getInputClass("harvestDate")}
+              className={`${getInputClass("harvestDate")}font-semibold text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4`}
             />
             <p className="errorMsg">{errors.harvestDate}</p>
           </div>
 
           {/* Crop Condition */}
-          <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Crop Condition</label>
+          <div className="field  text-white  mt-20">
+             <label className="font-semibold text-white">Crop Condition</label>
             <select
               name="cropCondition"
               value={form.cropCondition}
               onChange={handleChange}
-              className={getInputClass("cropCondition")}
+              className={`${getInputClass("cropCondition")}text-green-900 px-3 py-1 bg-white rounded-md outline font-semibold outline-3 outline-black-900 ml-4 `}
             >
-              <option value="">Select Condition</option>
-              <option value="fresh">Fresh</option>
-              <option value="semi_dry">Semi-dry</option>
-              <option value="dry">Dry</option>
-              <option value="stored">Stored (Old Stock)</option>
-              <option value="organic">Organic (Chemical-free)</option>
-              <option value="harvested_today">Harvested Today</option>
-              <option value="cold_storage">Cold Storage</option>
+              <option value="" className="font-semibold"
+              >Select Condition</option>
+              <option value="fresh" className="font-semibold">Fresh</option>
+              <option value="semi_dry" className="font-semibold">Semi-dry</option>
+              <option value="dry" className="font-semibold">Dry</option>
+              <option value="stored" className="font-semibold">Stored (Old Stock)</option>
+              <option value="organic" className="font-semibold">Organic (Chemical-free)</option>
+              <option value="harvested_today" className="font-semibold">Harvested Today</option>
+              <option value="cold_storage" className="font-semibold">Cold Storage</option>
             </select>
             <p className="errorMsg">{errors.cropCondition}</p>
           </div>
-
+   </div>
+  <div className="col2">
           {/* State, City, Address, Temperature */}
           {["state", "city", "address", "temperature"].map((f) => (
-            <div className="field mt-8 text-white mt-8 mt-4" key={f}>
-              <label className="font-semibold">{f.charAt(0).toUpperCase() + f.slice(1)}</label>
+            <div className="field  text-white  mt-20" key={f}>
+               <label className="font-semibold text-white">{f.charAt(0).toUpperCase() + f.slice(1)}</label>
               {f === "address" ? (
                 <textarea
                   name={f}
                   value={form[f]}
                   onChange={handleChange}
-                  className={getInputClass(f)}
+                  className={`${getInputClass(f)}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
                 />
               ) : (
-                <input name={f} value={form[f]} onChange={handleChange} className={getInputClass(f)} />
+                <input name={f} value={form[f]} onChange={handleChange} className={`${getInputClass(f)}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `} />
               )}
               <p className="errorMsg">{errors[f]}</p>
             </div>
           ))}
-
-          {/* Auction Duration */}
-     
-        </div>
-      </div>
-     <div className="field mt-8 text-white mt-8 mt-4">
-            <label className="font-semibold">Auction Duration</label>
+   <div className="field  text-white  mt-20">
+             <label className="font-semibold text-white">Auction Duration</label>
             <input
               type="number"
               name="auctionDuration"
               value={form.auctionDuration}
               onChange={handleChange}
               min={1}
-              className={getInputClass("auctionDuration")}
+              className={`${getInputClass("auctionDuration")}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
             />
-            <select name="auctionUnit" value={form.auctionUnit} onChange={handleChange}>
-              <option value="hours">Hours</option>
-              <option value="minutes">Minutes</option>
+            <select name="auctionUnit" value={form.auctionUnit} onChange={handleChange} className="font-semibold text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4">
+              <option value="hours" className="font-semibold">Hours</option>
+              <option value="minutes" className="font-semibold">Minutes</option>
             </select>
-            <p className="errorMsg">{errors.auctionDuration}</p>
+            <p className="errorMsg text-red-200">{errors.auctionDuration}</p>
           </div>
+          {/* Auction Duration */}
+     </div>
+      
+      </div>
+  
       {/* Description */}
-      <div className="field mt-8 text-white mt-8 mt-4">
-        <label className="font-semibold">Description</label>
+      <div className=" text-white  mt-20">
+        <label className="font-semibold ">Description</label>
         <textarea
           name="description"
           value={form.description}
           onChange={handleChange}
-          className={getInputClass("description")}
+          className={`${getInputClass("description")}text-green-900 px-3 py-1 bg-white rounded-md outline outline-3 outline-black-900 ml-4 `}
         />
-        <p className="errorMsg">{errors.description}</p>
+        <p className="errorMsg text-red-200">{errors.description}</p>
       </div>
 
-      <div className="submit">
-        <button type="submit">{editCrop ? "Update Crop" : "Add Crop"}</button>
+      <div className="submit flex justify-center">
+        <button type="submit" className="bg-amber-900 rounded-lg px-5 py-3 font-semibold text-white mt-20 mb-100 mx-auto"
+        >{editCrop ? "Update Crop" : "Add Crop"}</button>
       </div>
     </form>
     </div>

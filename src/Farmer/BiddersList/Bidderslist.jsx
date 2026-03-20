@@ -56,7 +56,7 @@ const loadData = () => {
 
   return (
     <div className="w-full min-h-screen px-4 sm:px-6 lg:px-8 py-6">
-      <h2 className="text-center font-bold text-xl p-3">Bidders List</h2>
+      <h2 className="text-center text-green-500  font-extrabold text-3xl p-3">Bidders List</h2>
 
       {crops.length === 0 && (
         <p className="text-center py-10 font-semibold text-neutral-700">

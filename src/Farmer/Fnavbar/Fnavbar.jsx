@@ -17,10 +17,7 @@ const Fnavbar = () => {
     return parts.slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "U";
   }, [user?.fname, user?.lname]);
 
-  const linkBtnClass = ({ isActive }) =>
-    `px-3 py-2 rounded-md text-white no-underline font-semibold transition ${
-      isActive ? "bg-white/15" : "hover:bg-white/10"
-    }`;
+
 
   const goToLogin = () => {
     dispatch(logoutUser());
@@ -57,27 +54,27 @@ const Fnavbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-green-800 text-white">
-        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
-          <div className="font-bold ml-10">
-            <i><img src="/src/assets/allu.png" className="h-20 w-40" alt="" /></i>
+      <header className="sticky top-0 z-50 bg-green-900 text-white">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center gap-3">
+          <div className="font-bold pt-3 ml-10">
+            <i><img src="/src/assets/finalallu.png" className="h-40 w-70" alt="" /></i>
           </div>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-20 ml-50 justify-between">
-            <NavLink to="/fhome" className={linkBtnClass}>
+          <nav className="hidden md:flex items-center gap-15 ml-40 justify-between  font-semibold">
+            <NavLink to="/fhome" >
               Home
             </NavLink>
-            <NavLink to="/addcrop" className={linkBtnClass}>
+            <NavLink to="/addcrop" >
               Add Crop
             </NavLink>
-            <NavLink to="/myaddedcrops" className={linkBtnClass}>
+            <NavLink to="/myaddedcrops" >
               My Added Crops
             </NavLink>
-            <NavLink to="/bidderslist" className={linkBtnClass}>
+            <NavLink to="/bidderslist" >
               Bidders List
             </NavLink>
-            <NavLink to="/fchats" className={linkBtnClass}>
+            <NavLink to="/fchats" >
               Chats
             </NavLink>
           </nav>
@@ -107,7 +104,7 @@ const Fnavbar = () => {
             aria-label="Open menu"
             aria-expanded={open}
           >
-            Menu
+         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
           </button>
         </div>
       </header>
@@ -130,24 +127,24 @@ const Fnavbar = () => {
                 className="rounded-md px-2 py-1 font-bold hover:bg-white/10"
                 aria-label="Close"
               >
-                X
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
               </button>
             </div>
 
-            <nav className="flex flex-col gap-1 p-3">
-              <NavLink to="/fhome" onClick={() => setOpen(false)} className={linkBtnClass}>
+            <nav className="flex flex-col gap-1 p-3 font-semibold">
+              <NavLink to="/fhome" onClick={() => setOpen(false)} className="mt-3  " >
                 Home
               </NavLink>
-              <NavLink to="/addcrop" onClick={() => setOpen(false)} className={linkBtnClass}>
+              <NavLink to="/addcrop" onClick={() => setOpen(false)} className="mt-3 ">
                 Add Crop
               </NavLink>
-              <NavLink to="/myaddedcrops" onClick={() => setOpen(false)} className={linkBtnClass}>
+              <NavLink to="/myaddedcrops" onClick={() => setOpen(false)} className="mt-3 ">
                 My Added Crops
               </NavLink>
-              <NavLink to="/bidderslist" onClick={() => setOpen(false)} className={linkBtnClass}>
+              <NavLink to="/bidderslist" onClick={() => setOpen(false)} className="mt-3 ">
                 Bidders List
               </NavLink>
-              <NavLink to="/fchats" onClick={() => setOpen(false)} className={linkBtnClass}>
+              <NavLink to="/fchats" onClick={() => setOpen(false)} className="mt-3 ">
                 Chats
               </NavLink>
             </nav>

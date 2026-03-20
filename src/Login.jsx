@@ -14,7 +14,6 @@ import {
 import { firebaseAuth } from "./firebase";
 import bg from '../src/assets/new page.jpg'
 
-
 const Login = () => {
   const [section, setSection] = useState("login");
   const navigate = useNavigate();
@@ -22,7 +21,7 @@ const dispatch = useDispatch();
 const farmers = useSelector(selectFarmers);
 const buyers = useSelector(selectBuyers);
 const currentUser = useSelector((state) => state.auth.user);
-
+const cooldownTimerRef = useRef(null);
   const [emailOrPhoneValue, setEmailOrPhoneValue] = useState("");
 
   // OTP state (used only for registration screens)
@@ -35,7 +34,7 @@ const currentUser = useSelector((state) => state.auth.user);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpConfirmation, setOtpConfirmation] = useState(null);
   const [otpPhone, setOtpPhone] = useState("");
-
+const [cooldown, setCooldown] = useState(0);
   // Google sign-in: if email doesn't exist in buyers/farmers yet, user chooses role
   const [googlePending, setGooglePending] = useState(null);
 
@@ -243,6 +242,10 @@ useEffect(() => {
   };
 
   const requestOtp = async () => {
+    if (cooldown > 0) {
+  toast.error("Wait before requesting OTP again");
+  return;
+}
     const raw = (emailorphoneRef.current?.value || "").trim();
     if (!isIndianMobile(raw)) {
       toast.error("Enter a valid Indian mobile number first");
@@ -273,6 +276,22 @@ useEffect(() => {
       setOtpSecondsLeft(180);
 
       toast.success("OTP sent to your mobile number");
+setCooldown(60);
+
+if (cooldownTimerRef.current) {
+  clearInterval(cooldownTimerRef.current);
+}
+
+cooldownTimerRef.current = setInterval(() => {
+  setCooldown((prev) => {
+    if (prev <= 1) {
+      clearInterval(cooldownTimerRef.current);
+      return 0;
+    }
+    return prev - 1;
+  });
+}, 1000);
+
     } catch (err) {
       resetOtpState();
       console.error("requestOtp failed:", err);
@@ -286,6 +305,14 @@ useEffect(() => {
       setOtpLoading(false);
     }
   };
+
+useEffect(() => {
+  return () => {
+    if (cooldownTimerRef.current) {
+      clearInterval(cooldownTimerRef.current);
+    }
+  };
+}, []);
 
   const verifyOtp = async () => {
     if (!otpConfirmation) {
@@ -785,18 +812,20 @@ useEffect(() => {
                   <button
                     type="button"
                     onClick={requestOtp}
-                    disabled={
-                      otpLoading || otpVerified || (otpSent && !otpExpired)
-                    }
+                  disabled={
+  otpLoading || otpVerified || (otpSent && !otpExpired) || cooldown > 0
+}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-emerald-700 px-3 py-1 text-xs font-bold text-white shadow hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {otpVerified
-                      ? "Verified"
-                      : otpSent && !otpExpired
-                      ? formatMmSs(otpSecondsLeft)
-                      : otpExpired
-                      ? "Resend OTP"
-                      : "Request OTP"}
+  ? "Verified"
+  : cooldown > 0
+  ? `Wait ${cooldown}s`
+  : otpSent && !otpExpired
+  ? formatMmSs(otpSecondsLeft)
+  : otpExpired
+  ? "Resend OTP"
+  : "Request OTP"}
                   </button>
                 )}
               </div>
@@ -973,17 +1002,19 @@ useEffect(() => {
                     type="button"
                     onClick={requestOtp}
                     disabled={
-                      otpLoading || otpVerified || (otpSent && !otpExpired)
-                    }
+  otpLoading || otpVerified || (otpSent && !otpExpired) || cooldown > 0
+}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-emerald-700 px-3 py-1 text-xs font-bold text-white shadow hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {otpVerified
-                      ? "Verified"
-                      : otpSent && !otpExpired
-                      ? formatMmSs(otpSecondsLeft)
-                      : otpExpired
-                      ? "Resend OTP"
-                      : "Request OTP"}
+                  {otpVerified
+  ? "Verified"
+  : cooldown > 0
+  ? `Wait ${cooldown}s`
+  : otpSent && !otpExpired
+  ? formatMmSs(otpSecondsLeft)
+  : otpExpired
+  ? "Resend OTP"
+  : "Request OTP"}
                   </button>
                 )}
               </div>

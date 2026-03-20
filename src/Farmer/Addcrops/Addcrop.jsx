@@ -32,13 +32,13 @@ const Addcrop = () => {
 
   return (
     <div className="addcrop-page bg-neutral-50 min-h-screen px-4 sm:px-6 lg:px-8 py-6">
-      <div className="header mb-5 w-full flex flex-wrap items-center justify-between gap-4">
-        <h2 className="font-bold text-green-300">My Crops</h2>
+      <div className="header mb-5 w-full flex flex-wrap items-center justify-between gap-4 ">
+        <h2 className="font-extrabold text-green-500 mx-auto text-3xl mt-7 mb-4">My Crops</h2>
         <button
           onClick={() => navigate("/addcropform")}
-          className="bg-amber-800 text-white rounded-lg p-2 font-semibold"
+          className="bg-amber-800 text-yellow-500 rounded-3xl px-6 py-5 font-8xl font-semibold fixed mt-200 ml-370"
         >
-          Add +
+       <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#fbf475"><path d="M440-120v-320H120v-80h320v-320h80v320h320v80H520v320h-80Z"/></svg>
         </button>
       </div>
 
@@ -50,7 +50,7 @@ const Addcrop = () => {
         <div className="crop-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
           {crops.map((crop) => (
             <div
-              className="crop-card rounded-lg p-4 sm:p-5 flex flex-col gap-3 bg-amber-100 shadow-lg items-center justify-center text-center font-semibold w-full overflow-hidden"
+              className="crop-card rounded-lg p-4 sm:p-5 flex flex-col gap-3 shadow-lg items-center border border-1 border-green-100 justify-center text-center font-semibold w-full overflow-hidden"
               key={crop.id}
             >
               <img

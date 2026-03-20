@@ -58,14 +58,14 @@ const Bnavbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-green-800 text-white">
-        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-3">
+      <header className="sticky top-0 z-50 bg-green-900 text-white">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center gap-3">
           <div className="font-bold ml-10">
-            <i className="ml-10"><img src="/src/assets/allu.png" alt="" className="h-20 w-40" /></i>
+            <i className="ml-10"><img src="/src/assets/finalallu.png" alt="" className="h-40 w-70" /></i>
           </div>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-20 ml-50 justify-between">
+          <nav className="hidden md:flex items-center gap-15 ml-40 justify-between font-semibold">
             <NavLink to="/bhome" className={linkBtnClass}>
               Home
             </NavLink>

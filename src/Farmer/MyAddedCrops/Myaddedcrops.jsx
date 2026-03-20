@@ -23,7 +23,8 @@ const crops = useSelector((state) =>
   };
 
   return (
-    <div className="w-full my-added-crops px-4 sm:px-6 lg:px-8 py-6"><h2 className="">My Added Crops</h2> 
+    <div className="min-w-screen my-added-crops px-4 sm:px-6 lg:px-8 py-6 ">
+      <h2 className="ml-170 mt-10 mb-10 text-green-500 font-extrabold text-3xl">My Added Crops</h2> 
       <div className="bg-gray-100 w-full rounded-lg p-4 sm:p-6 overflow-x-auto">
   
 
@@ -52,9 +53,9 @@ const crops = useSelector((state) =>
                     "No Image"
                   )}
                 </td>
-                <td className="border  border-gray-300 text-center">{crop.name}</td>
+                <td className="border  border-gray-300 text-center text-xl  font-bold">{crop.name}</td>
                 <td className="border  border-gray-300 text-center">
-                  <span className={`${getBadgeClass(crop.auctionStatus)} ${crop.auctionStatus === 'Active' ?'text-green-400': crop.auctionStatus === 'Ended' ? 'text-red-700':'text-gray-300'} font-semibold`}>
+                  <span className={`${getBadgeClass(crop.auctionStatus)} text-xl  ${crop.auctionStatus === 'Active' ?'text-green-400': crop.auctionStatus === 'Ended' ? 'text-red-700':'text-gray-600'} font-semibold`}>
                     {crop.auctionStatus}
                   </span>
                 </td>
