@@ -417,7 +417,7 @@ return;
 
 
   return (
-    <div className="flex flex-col h-full w-full justify-center items-center bg-slate-500 text-green-900">
+    <div className="add-crop-form flex flex-col h-full w-full justify-center items-center bg-slate-500 text-green-900">
      <h1 className="font-extrabold text-white mb-10 text-6xl mt-10" >Add Crop</h1>  
      <form onSubmit={handleSubmit} className="">
       

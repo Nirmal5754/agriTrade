@@ -548,17 +548,6 @@ useEffect(() => {
     // Users registry is stored in Redux and persisted in localStorage by authSlice
     dispatch(registerUser({ role: type, user }));
 
-    // Automatically log in user
- dispatch(
-  loginUser({
-    id: user.id,
-    fname: user.fname,
-    lname: user.lname,
-    role: type,
-    emailOrPhone: user.emailOrPhone,
-  })
-);
-
     toast.success(`${type === "farmer" ? "Farmer" : "Buyer"} Registered Successfully!`);
 
     // clear inputs

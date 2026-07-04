@@ -50,6 +50,18 @@
   background: rgba(255, 255, 255, 0.78) !important;
 }
 
+.add-crop-form input:not([type="file"]),
+.add-crop-form select,
+.add-crop-form textarea {
+  background: #ffffff;
+  color: #064e3b;
+}
+
+.add-crop-form input::placeholder,
+.add-crop-form textarea::placeholder {
+  color: #64748b;
+}
+
 @media (min-width: 768px) {
   .loginpage {
     background-attachment: fixed;
