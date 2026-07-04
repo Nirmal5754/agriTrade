@@ -52,14 +52,18 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
     setFilteredCrops(results);
   }, [allCrops, searchTerm, filterCategory]);
 
-  const hasParticipated = (cropId) =>
-    myBids.some((bid) => bid.id === cropId);
+  const hasParticipated = (crop) =>
+    myBids.some((bid) => String(bid.id) === String(crop.id)) ||
+    (crop.bidders || []).some((bid) => String(bid.userId) === String(user?.id));
 
-  const getAuctionResult = (crop) => {
+  const getAuctionResult = (crop, participated) => {
   if (!user) return null;
+  if (!participated) return null;
 
 
-    const ended = Date.now() >= crop.auctionEndTime;
+    const ended =
+      crop.auctionStatus === "Ended" ||
+      (crop.auctionEndTime && Date.now() >= crop.auctionEndTime);
     if (!ended) return null;
 
     const bidders = [...(crop.bidders || [])].sort(
@@ -68,7 +72,7 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
 
     if (!bidders.length) return null;
 
-  return bidders[0].userId === user.id ? "WON" : "LOST";
+  return String(bidders[0].userId) === String(user.id) ? "WON" : "LOST";
 
   };
 
@@ -108,11 +112,11 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
           <p className="col-span-full text-center py-10 font-semibold text-neutral-700">No crops available</p>
         ) : (
           filteredCrops.map((crop) => {
-            const participated = hasParticipated(crop.id);
+            const participated = hasParticipated(crop);
             const ended =
-              crop.auctionEndTime &&
-              Date.now() >= crop.auctionEndTime;
-            const result = getAuctionResult(crop);
+              crop.auctionStatus === "Ended" ||
+              (crop.auctionEndTime && Date.now() >= crop.auctionEndTime);
+            const result = getAuctionResult(crop, participated);
 
             return (
               <div key={crop.id} className="b-crop-card flex flex-col gap-3 bg-amber-200 shadow-lg p-4 sm:p-5 items-center justify-center text-center font-semibold rounded-lg w-full">
@@ -158,18 +162,20 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
                 )}
 
                 {/* BUTTON */}
-                <button
-                  disabled={ended || participated}
-                  onClick={() => handleBid(crop)}
-                  className={[
-                    "rounded-lg px-4 py-2 w-full sm:w-auto text-white font-semibold transition",
-                    ended || participated
-                      ? "bg-slate-400 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800",
-                  ].join(" ")}
-                >
-                  {ended ? "Bid" : participated ? "Participated" : "Bid"}
-                </button>
+                {!ended && (
+                  <button
+                    disabled={participated}
+                    onClick={() => handleBid(crop)}
+                    className={[
+                      "rounded-lg px-4 py-2 w-full sm:w-auto text-white font-semibold transition",
+                      participated
+                        ? "bg-slate-400 cursor-not-allowed"
+                        : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800",
+                    ].join(" ")}
+                  >
+                    {participated ? "Participated" : "Bid"}
+                  </button>
+                )}
               </div>
             );
           })
