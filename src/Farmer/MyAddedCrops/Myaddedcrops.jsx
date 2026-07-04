@@ -35,7 +35,7 @@ const crops = useSelector((state) =>
           <thead>
             <tr>
               <th className="border py-3  border-gray-300 p-1 bg-green-700 text-lg text-yellow-100">Crop Image</th>
-              <th className="border  border-gray-300 p-1 bg-green-700 text-lg  text-yellow-100">Crop Name</th>
+              <th className="border  border-gray-300 p-1 bg-green-700 text-lg  text-yellow-100">Farmer's Name</th>
               <th className="border  border-gray-300 p-1 bg-green-700 text-lg  text-yellow-100">Status</th>
             </tr>
           </thead>
