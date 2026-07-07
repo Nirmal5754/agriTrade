@@ -161,8 +161,21 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
                   </p>
                 )}
 
+                {ended && !participated && (
+                  <p className="font-bold text-neutral-600">
+                    This auction ended
+                  </p>
+                )}
+
                 {/* BUTTON */}
-                {!ended && (
+                {ended && !participated ? (
+                  <button
+                    disabled
+                    className="rounded-lg px-4 py-2 w-full sm:w-auto text-white font-semibold transition bg-slate-400 cursor-not-allowed"
+                  >
+                    Bid
+                  </button>
+                ) : !ended ? (
                   <button
                     disabled={participated}
                     onClick={() => handleBid(crop)}
@@ -175,7 +188,7 @@ const myBids = useSelector((state) => selectUserBids(state, user?.id));
                   >
                     {participated ? "Participated" : "Bid"}
                   </button>
-                )}
+                ) : null}
               </div>
             );
           })
