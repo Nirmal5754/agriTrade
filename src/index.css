@@ -4,10 +4,9 @@
 /* Login page background (keeps your JSX unchanged) */
 .loginpage {
   position: relative;
-  /* Put your chosen background photo in /public/login-bg.jpg */
   background-image:
     linear-gradient(rgba(3, 7, 18, 0.28), rgba(3, 7, 18, 0.45)),
-    url("/login-bg.jpg");
+    url("./assets/new page.jpg");
   background-size: cover;
   background-position: 50% 55%;
   background-repeat: no-repeat;

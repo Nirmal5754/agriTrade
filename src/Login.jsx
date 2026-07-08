@@ -12,7 +12,8 @@ import {
   signOut,
 } from "firebase/auth";
 import { firebaseAuth } from "./firebase";
-import bg from '../src/assets/new page.jpg'
+import bg from "./assets/new page.jpg";
+import googleIcon from "./assets/pngh.png";
 
 const Login = () => {
   const [section, setSection] = useState("login");
@@ -690,7 +691,7 @@ useEffect(() => {
               onClick={handleGoogleLogin}
               className="w-full rounded-md flex items-center gap-3 justify-center border border-neutral-300 bg-white px-4 py-2 text-sm font-bold text-neutral-900 shadow-sm transition hover:bg-neutral-50 active:scale-[0.99]"
             >
-        <img src="/src/assets/pngh.png" alt="Google" className="h-6 w-6"/><span>Continue with Google </span>  
+        <img src={googleIcon} alt="Google" className="h-6 w-6"/><span>Continue with Google </span>  
             </button>
 
             {googlePending?.email && (

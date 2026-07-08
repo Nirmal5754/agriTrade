@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../Redux/Slices/authSlice";
+import logo from "../../assets/finalallu.png";
 
 const Bnavbar = () => {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ const Bnavbar = () => {
       <header className="sticky top-0 z-50 bg-green-900 text-white">
         <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center gap-3">
           <div className="font-bold ml-10">
-            <i className="ml-10"><img src="/src/assets/finalallu.png" alt="" className="h-40 w-70" /></i>
+            <i className="ml-10"><img src={logo} alt="" className="h-40 w-70" /></i>
           </div>
 
           {/* Desktop nav */}
