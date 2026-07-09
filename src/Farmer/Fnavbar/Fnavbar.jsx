@@ -93,7 +93,7 @@ const Fnavbar = () => {
               onClick={goToLogin}
               className="rounded-md bg-white px-3 py-1.5 text-sm font-bold text-neutral-900 shadow-sm transition hover:bg-neutral-100 active:scale-[0.99]"
             >
-              Go to Login
+            Log out
             </button>
           </div>
 
@@ -171,7 +171,7 @@ const Fnavbar = () => {
                 onClick={goToLogin}
                 className="mt-4 w-full rounded-md bg-white px-4 py-2 text-sm font-bold text-neutral-900 shadow-sm transition hover:bg-neutral-100 active:scale-[0.99]"
               >
-                Go to Login
+             Log out
               </button>
             </div>
           </aside>
