@@ -59,10 +59,10 @@ const Bnavbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-green-900 text-white">
+      <header className="sticky top-0 z-[100] bg-green-900 text-white">
         <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center gap-3">
-          <div className="font-bold ml-10">
-            <i className="ml-10"><img src={logo} alt="" className="h-40 w-70" /></i>
+          <div className="font-bold shrink-0">
+            <i><img src={logo} alt="" className="h-16 sm:h-20 md:h-28 lg:h-40 w-auto" /></i>
           </div>
 
           {/* Desktop nav */}
@@ -106,14 +106,14 @@ const Bnavbar = () => {
             aria-label="Open menu"
             aria-expanded={open}
           >
-            Menu
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></svg>
           </button>
         </div>
       </header>
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="fixed inset-0 z-[1000] md:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-black/40"
@@ -129,7 +129,7 @@ const Bnavbar = () => {
                 className="rounded-md px-2 py-1 font-bold hover:bg-white/10"
                 aria-label="Close"
               >
-                X
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
               </button>
             </div>
 

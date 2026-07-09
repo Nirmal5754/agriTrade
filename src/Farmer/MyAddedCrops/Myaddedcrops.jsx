@@ -23,20 +23,20 @@ const crops = useSelector((state) =>
   };
 
   return (
-    <div className="min-w-screen my-added-crops px-4 sm:px-6 lg:px-8 py-6 ">
-      <h2 className="ml-170 mt-10 mb-10 text-green-500 font-extrabold text-3xl">My Added Crops</h2> 
+    <div className="w-full my-added-crops px-4 sm:px-6 lg:px-8 py-6 overflow-x-hidden">
+      <h2 className="mt-6 mb-8 text-center text-green-500 font-extrabold text-2xl sm:text-3xl">My Added Crops</h2> 
       <div className="bg-gray-100 w-full rounded-lg p-4 sm:p-6 overflow-x-auto">
   
 
       {crops.length === 0 ? (
         <p>No crops added yet.</p>
       ) : (
-        <table className="border border-gray-300 min-w-[640px] w-full mx-auto text-sm">
+        <table className="border border-gray-300 min-w-[560px] w-full mx-auto text-sm">
           <thead>
             <tr>
-              <th className="border py-3  border-gray-300 p-1 bg-green-700 text-lg text-yellow-100">Crop Image</th>
-              <th className="border  border-gray-300 p-1 bg-green-700 text-lg  text-yellow-100">Farmer's Name</th>
-              <th className="border  border-gray-300 p-1 bg-green-700 text-lg  text-yellow-100">Status</th>
+              <th className="border py-3 border-gray-300 p-1 bg-green-700 text-sm sm:text-lg text-yellow-100">Crop Image</th>
+              <th className="border border-gray-300 p-1 bg-green-700 text-sm sm:text-lg text-yellow-100">Farmer's Name</th>
+              <th className="border border-gray-300 p-1 bg-green-700 text-sm sm:text-lg text-yellow-100">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -53,9 +53,9 @@ const crops = useSelector((state) =>
                     "No Image"
                   )}
                 </td>
-                <td className="border  border-gray-300 text-center text-xl  font-bold">{crop.name}</td>
+                <td className="border border-gray-300 text-center text-sm sm:text-xl font-bold">{crop.name}</td>
                 <td className="border  border-gray-300 text-center">
-                  <span className={`${getBadgeClass(crop.auctionStatus)} text-xl  ${crop.auctionStatus === 'Active' ?'text-green-400': crop.auctionStatus === 'Ended' ? 'text-red-700':'text-gray-600'} font-semibold`}>
+                  <span className={`${getBadgeClass(crop.auctionStatus)} text-sm sm:text-xl ${crop.auctionStatus === 'Active' ?'text-green-400': crop.auctionStatus === 'Ended' ? 'text-red-700':'text-gray-600'} font-semibold`}>
                     {crop.auctionStatus}
                   </span>
                 </td>

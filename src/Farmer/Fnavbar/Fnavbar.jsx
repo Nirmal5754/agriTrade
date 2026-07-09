@@ -55,10 +55,10 @@ const Fnavbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-green-900 text-white">
+      <header className="sticky top-0 z-[100] bg-green-900 text-white">
         <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 flex items-center gap-3">
-          <div className="font-bold pt-3 ml-10">
-            <i><img src={logo} className="h-40 w-70" alt="" /></i>
+          <div className="font-bold pt-2 md:pt-3 shrink-0">
+            <i><img src={logo} className="h-16 sm:h-20 md:h-28 lg:h-40 w-auto" alt="" /></i>
           </div>
 
           {/* Desktop nav */}
@@ -112,7 +112,7 @@ const Fnavbar = () => {
 
       {/* Mobile drawer */}
       {open && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="fixed inset-0 z-[1000] md:hidden">
           <button
             type="button"
             className="absolute inset-0 bg-black/40"
